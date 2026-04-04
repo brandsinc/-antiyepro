@@ -292,12 +292,81 @@
   .ilerleme-bar-dolu { height: 100%; border-radius: 3px; transition: width 0.5s; }
   .ilerleme-slider { width: 100%; cursor: pointer; accent-color: var(--ana); margin-top: 4px; }
   .ilerleme-not { font-size: 0.75rem; color: var(--metin-acik); font-style: italic; margin-top: 4px; }
+  /* ── GİRİŞ EKRANI ── */
+  .giris-ekrani {
+    position: fixed; inset: 0; z-index: 9999;
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1d4ed8 100%);
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+  }
+  .giris-kutu {
+    background: white; border-radius: 20px; padding: 36px 32px;
+    width: 100%; max-width: 380px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: modalAc 0.3s ease;
+  }
+  .giris-logo { text-align: center; margin-bottom: 28px; }
+  .giris-logo-ikon { width: 64px; height: 64px; background: var(--ana-acik); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 12px; }
+  .giris-logo-adi { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.4rem; color: var(--metin); }
+  .giris-logo-alt { font-size: 0.8rem; color: var(--metin-acik); margin-top: 2px; }
+  .giris-form-baslik { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; color: var(--metin); margin-bottom: 16px; }
+  .pin-input-kap { display: flex; gap: 10px; justify-content: center; margin: 12px 0; }
+  .pin-hane {
+    width: 52px; height: 56px; border: 2px solid var(--sinir); border-radius: 10px;
+    font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800;
+    text-align: center; color: var(--metin); background: var(--bg);
+    transition: border-color 0.15s; -webkit-text-security: disc;
+  }
+  .pin-hane:focus { outline: none; border-color: var(--ana); background: var(--ana-acik); }
+  .giris-hata { background: var(--kirmizi-acik); color: var(--kirmizi); border-radius: 8px; padding: 10px 14px; font-size: 0.85rem; margin-bottom: 12px; display: none; }
+
+  /* Kullanıcı yönetimi */
+  .kullanici-satir { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--sinir); }
+  .kullanici-satir:last-child { border-bottom: none; }
+  .kullanici-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; color: white; flex-shrink: 0; }
+
+  /* Rol badge */
+  .rol-admin { background: #fef3c7; color: #92400e; }
+  .rol-sef { background: var(--ana-acik); color: var(--ana); }
+
+  /* Üst bar (giriş sonrası) */
+  .ust-bar { background: white; border-bottom: 1px solid var(--sinir); padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; }
+  .kullanici-bilgi { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--metin-acik); }
 </style>
 </head>
 <body>
 
 <!-- HEADER -->
-<div class="app-shell">
+<!-- ── GİRİŞ EKRANI ── -->
+<div class="giris-ekrani" id="giris-ekrani">
+  <div class="giris-kutu">
+    <div class="giris-logo">
+      <div class="giris-logo-ikon">🏗️</div>
+      <div class="giris-logo-adi">ŞantiyePro</div>
+      <div class="giris-logo-alt">Şantiye Yönetim Sistemi</div>
+    </div>
+    <div class="giris-form-baslik">Giriş Yap</div>
+    <div class="form-group">
+      <label>Kullanıcı Adı</label>
+      <input type="text" id="giris-kullanici" placeholder="kullanıcı adınız" autocomplete="off"
+        style="font-size:1rem" onkeydown="if(event.key==='Enter')document.getElementById('pin-1').focus()">
+    </div>
+    <div class="form-group">
+      <label>PIN (4 Rakam)</label>
+      <div class="pin-input-kap">
+        <input class="pin-hane" id="pin-1" type="password" inputmode="numeric" maxlength="1" oninput="pinGec(this,'pin-2')" onkeydown="pinGeriGec(event,this,null)">
+        <input class="pin-hane" id="pin-2" type="password" inputmode="numeric" maxlength="1" oninput="pinGec(this,'pin-3')" onkeydown="pinGeriGec(event,this,'pin-1')">
+        <input class="pin-hane" id="pin-3" type="password" inputmode="numeric" maxlength="1" oninput="pinGec(this,'pin-4')" onkeydown="pinGeriGec(event,this,'pin-2')">
+        <input class="pin-hane" id="pin-4" type="password" inputmode="numeric" maxlength="1" oninput="pinGec(this,null)" onkeydown="pinGeriGec(event,this,'pin-3')">
+      </div>
+    </div>
+    <div class="giris-hata" id="giris-hata">❌ Kullanıcı adı veya PIN hatalı</div>
+    <button class="btn btn-sari" style="width:100%;justify-content:center;padding:12px;font-size:0.95rem" onclick="girisYap()">
+      Giriş Yap →
+    </button>
+  </div>
+</div>
+
+<div class="app-shell" id="app-shell" style="display:none">
 
   <!-- ── SIDEBAR ── -->
   <aside class="sidebar">
@@ -323,6 +392,21 @@
       <div style="height:1px;background:rgba(255,255,255,0.1);margin:6px 8px"></div>
       <button class="nav-tab" onclick="sayfaGit('siparis')">📦 <span class="etiket">Sipariş</span></button>
       <button class="nav-tab" onclick="sayfaGit('ilerleme')">📐 <span class="etiket">İlerleme</span></button>
+      <div id="admin-nav" style="display:none">
+        <div style="height:1px;background:rgba(255,255,255,0.1);margin:6px 8px"></div>
+        <button class="nav-tab" onclick="sayfaGit('kullanicilar')">👤 <span class="etiket">Kullanıcılar</span></button>
+      </div>
+      <div style="flex:1"></div>
+      <div style="padding:10px 8px;border-top:1px solid rgba(255,255,255,0.1)">
+        <div id="sidebar-kullanici" style="display:flex;align-items:center;gap:8px;padding:8px 6px;border-radius:6px;margin-bottom:4px">
+          <div id="sidebar-avatar" style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;color:white;flex-shrink:0"></div>
+          <div style="flex:1;min-width:0">
+            <div id="sidebar-isim" style="font-size:0.78rem;font-weight:600;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+            <div id="sidebar-rol" style="font-size:0.68rem;color:rgba(255,255,255,0.5)"></div>
+          </div>
+        </div>
+        <button class="nav-tab" style="color:rgba(255,255,255,0.5);width:100%;justify-content:center;font-size:0.78rem" onclick="cikisYap()">🚪 Çıkış</button>
+      </div>
     </nav>
   </aside>
 
@@ -713,9 +797,59 @@
     <div id="ilerleme-listesi"></div>
   </div>
 
+  <!-- ═══════════════ KULLANICILAR (ADMIN) ═══════════════ -->
+  <div id="sayfa-kullanicilar" class="sayfa">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:700;color:var(--metin)">👤 Kullanıcı Yönetimi</div>
+        <div style="font-size:0.8rem;color:var(--metin-acik);margin-top:2px">Sisteme erişebilecek kullanıcıları buradan yönetin</div>
+      </div>
+      <button class="btn btn-sari" onclick="modalAc('modal-kullanici')">+ Yeni Kullanıcı</button>
+    </div>
+    <div class="kart" id="kullanici-listesi"></div>
+  </div>
+
     </div><!-- /main -->
   </div><!-- /content -->
 </div><!-- /app-shell -->
+
+<!-- Kullanıcı Modal -->
+<div class="modal-overlay" id="modal-kullanici">
+  <div class="modal">
+    <div class="modal-baslik">
+      👤 Kullanıcı Ekle
+      <button class="modal-kapat" onclick="modalKapat('modal-kullanici')">✕</button>
+    </div>
+    <input type="hidden" id="ku-edit-id">
+    <div class="form-group">
+      <label>Ad Soyad *</label>
+      <input type="text" id="ku-isim" placeholder="ör. Mehmet Yılmaz">
+    </div>
+    <div class="form-group">
+      <label>Kullanıcı Adı * (giriş için)</label>
+      <input type="text" id="ku-kullanici" placeholder="ör. mehmet" autocomplete="off" style="text-transform:lowercase">
+    </div>
+    <div class="form-group">
+      <label>PIN (4 Rakam) *</label>
+      <input type="text" id="ku-pin" placeholder="ör. 1234" maxlength="4" inputmode="numeric">
+    </div>
+    <div class="form-group">
+      <label>Rol</label>
+      <select id="ku-rol">
+        <option value="sef">👷 Şef / Görevli</option>
+        <option value="admin">👑 Yönetici</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Not (opsiyonel)</label>
+      <input type="text" id="ku-not" placeholder="ör. Merkez Şantiye Şefi">
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-kirmizi" onclick="modalKapat('modal-kullanici')">İptal</button>
+      <button class="btn btn-sari" onclick="kullaniciKaydet()">✅ Kaydet</button>
+    </div>
+  </div>
+</div>
 
 <!-- Sipariş Modal -->
 <div class="modal-overlay" id="modal-siparis">
@@ -1444,6 +1578,7 @@ function sayfaGit(id) {
   if (id === 'anlasma') anlasmaHazirla();
   if (id === 'siparis') siparisHazirla();
   if (id === 'ilerleme') ilerlemeHazirla();
+  if (id === 'kullanicilar') kullanicilariGoster();
 }
 
 // ════════════════════════════════════════════
@@ -3530,12 +3665,232 @@ function ilerlemeNotGuncelle(santiyeId, asamaId, not) {
 }
 
 // ════════════════════════════════════════════
-//   BAŞLAT (wrapper)
+//   KİMLİK DOĞRULAMA & ROL YÖNETİMİ
+// ════════════════════════════════════════════
+const USERS_REF = db.collection('santiyepro').doc('kullanicilar');
+let aktifKullanici = null; // { id, isim, kullanici, rol }
+
+// Rol izinleri
+const ROL_IZINLERI = {
+  admin: ['panel','santiyeler','maliyet','raporlar','takimlar','yoklama','gorevler','takvim','anlasma','siparis','ilerleme','kullanicilar'],
+  sef:   ['panel','santiyeler','yoklama','gorevler','takimlar','siparis','ilerleme']
+};
+
+function pinGec(input, sonrakiId) {
+  input.value = input.value.replace(/[^0-9]/g,'');
+  if (input.value.length === 1 && sonrakiId) {
+    document.getElementById(sonrakiId).focus();
+  }
+  if (!sonrakiId && input.value.length === 1) {
+    // Son hane dolduruldu
+    setTimeout(() => girisYap(), 100);
+  }
+}
+
+function pinGeriGec(e, input, oncekiId) {
+  if (e.key === 'Backspace' && input.value === '' && oncekiId) {
+    document.getElementById(oncekiId).focus();
+  }
+}
+
+function pinAl() {
+  return ['pin-1','pin-2','pin-3','pin-4'].map(id => document.getElementById(id).value).join('');
+}
+
+function pinTemizle() {
+  ['pin-1','pin-2','pin-3','pin-4'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('pin-1').focus();
+}
+
+async function girisYap() {
+  const kullanici = document.getElementById('giris-kullanici').value.trim().toLowerCase();
+  const pin = pinAl();
+  const hataEl = document.getElementById('giris-hata');
+  hataEl.style.display = 'none';
+
+  if (!kullanici || pin.length !== 4) {
+    hataEl.textContent = '❌ Kullanıcı adı ve 4 haneli PIN gerekli';
+    hataEl.style.display = 'block';
+    return;
+  }
+
+  try {
+    // İlk giriş — admin yoksa ilk kullanıcıyı admin yap
+    const snap = await USERS_REF.get();
+    let kullanicilar = snap.exists ? (snap.data().liste || []) : [];
+
+    // İlk kullanıcı yoksa otomatik admin oluştur
+    if (kullanicilar.length === 0) {
+      const ilkAdmin = { id: uid(), isim: kullanici, kullanici, pin, rol: 'admin', not: 'İlk kullanıcı' };
+      kullanicilar = [ilkAdmin];
+      await USERS_REF.set({ liste: kullanicilar });
+      toast('İlk yönetici hesabı oluşturuldu! 👑');
+    }
+
+    const bulunan = kullanicilar.find(u => u.kullanici === kullanici && u.pin === pin);
+    if (!bulunan) {
+      hataEl.textContent = '❌ Kullanıcı adı veya PIN hatalı';
+      hataEl.style.display = 'block';
+      pinTemizle();
+      return;
+    }
+
+    // Giriş başarılı
+    aktifKullanici = bulunan;
+    sessionStorage.setItem('aktifKullanici', JSON.stringify(aktifKullanici));
+    girisBasarili();
+  } catch(e) {
+    console.error(e);
+    hataEl.textContent = '❌ Bağlantı hatası, tekrar deneyin';
+    hataEl.style.display = 'block';
+  }
+}
+
+function girisBasarili() {
+  document.getElementById('giris-ekrani').style.display = 'none';
+  document.getElementById('app-shell').style.display = 'flex';
+
+  // Sidebar kullanıcı bilgisi
+  const baş = aktifKullanici.isim.charAt(0).toUpperCase();
+  const renk = aktifKullanici.rol === 'admin' ? '#92400e' : '#1e40af';
+  document.getElementById('sidebar-avatar').textContent = baş;
+  document.getElementById('sidebar-avatar').style.background = renk;
+  document.getElementById('sidebar-isim').textContent = aktifKullanici.isim;
+  document.getElementById('sidebar-rol').textContent = aktifKullanici.rol === 'admin' ? '👑 Yönetici' : '👷 Şef';
+
+  // Admin nav göster/gizle
+  document.getElementById('admin-nav').style.display = aktifKullanici.rol === 'admin' ? 'block' : 'none';
+
+  // İzin olmayan sekmeleri gizle
+  const izinler = ROL_IZINLERI[aktifKullanici.rol] || [];
+  document.querySelectorAll('.nav-tab[onclick]').forEach(tab => {
+    const onclick = tab.getAttribute('onclick') || '';
+    const m = onclick.match(/sayfaGit\('(\w+)'\)/);
+    if (m) {
+      tab.style.display = izinler.includes(m[1]) ? '' : 'none';
+    }
+  });
+
+  // Veriyi yükle
+  yukle();
+}
+
+function cikisYap() {
+  aktifKullanici = null;
+  sessionStorage.removeItem('aktifKullanici');
+  document.getElementById('app-shell').style.display = 'none';
+  document.getElementById('giris-ekrani').style.display = 'flex';
+  document.getElementById('giris-kullanici').value = '';
+  pinTemizle();
+  document.getElementById('giris-hata').style.display = 'none';
+}
+
+// ── Kullanıcı Yönetimi ──
+async function kullanicilarYukle() {
+  try {
+    const snap = await USERS_REF.get();
+    return snap.exists ? (snap.data().liste || []) : [];
+  } catch(e) { return []; }
+}
+
+async function kullanicilariGoster() {
+  const liste = await kullanicilarYukle();
+  const el = document.getElementById('kullanici-listesi');
+
+  if (liste.length === 0) {
+    el.innerHTML = '<div class="bos-durum"><div class="bos-durum-ikon">👤</div><div class="bos-durum-metin">Henüz kullanıcı yok</div></div>';
+    return;
+  }
+
+  el.innerHTML = liste.map(u => {
+    const baş = u.isim.charAt(0).toUpperCase();
+    const renk = u.rol === 'admin' ? '#d97706' : '#2563eb';
+    const benMiyim = u.id === aktifKullanici?.id;
+    return `<div class="kullanici-satir">
+      <div class="kullanici-avatar" style="background:${renk}">${baş}</div>
+      <div style="flex:1">
+        <div style="font-weight:600;font-size:0.9rem">${u.isim} ${benMiyim?'<span style="font-size:0.72rem;color:var(--metin-acik)">(siz)</span>':''}</div>
+        <div style="font-size:0.77rem;color:var(--metin-acik)">@${u.kullanici} · PIN: ${'●'.repeat(4)} ${u.not ? '· '+u.not : ''}</div>
+      </div>
+      <span class="badge ${u.rol==='admin'?'rol-admin':'rol-sef'}">${u.rol==='admin'?'👑 Yönetici':'👷 Şef'}</span>
+      ${!benMiyim ? `<button class="btn btn-mavi btn-sm" onclick="kullaniciDuzenle('${u.id}')">✏️</button>
+      <button class="btn btn-kirmizi btn-sm" data-sil-fn="kullaniciSil" data-sil-args='["${u.id}"]'>🗑️</button>` : ''}
+    </div>`;
+  }).join('');
+}
+
+async function kullaniciKaydet() {
+  const isim = document.getElementById('ku-isim').value.trim();
+  const kullanici = document.getElementById('ku-kullanici').value.trim().toLowerCase();
+  const pin = document.getElementById('ku-pin').value.trim();
+  const rol = document.getElementById('ku-rol').value;
+  const not = document.getElementById('ku-not').value.trim();
+
+  if (!isim || !kullanici || pin.length !== 4 || !/^\d{4}$/.test(pin)) {
+    toast('Ad, kullanıcı adı ve 4 haneli PIN zorunlu!', '⚠️'); return;
+  }
+
+  const liste = await kullanicilarYukle();
+  const editId = document.getElementById('ku-edit-id').value;
+
+  // Kullanıcı adı benzersizliği kontrol
+  const mevcut = liste.find(u => u.kullanici === kullanici && u.id !== editId);
+  if (mevcut) { toast('Bu kullanıcı adı zaten kullanılıyor!', '⚠️'); return; }
+
+  if (editId) {
+    const idx = liste.findIndex(u => u.id === editId);
+    if (idx > -1) liste[idx] = { ...liste[idx], isim, kullanici, pin, rol, not };
+    document.getElementById('ku-edit-id').value = '';
+  } else {
+    liste.push({ id: uid(), isim, kullanici, pin, rol, not });
+  }
+
+  await USERS_REF.set({ liste });
+  modalKapat('modal-kullanici');
+  ['ku-isim','ku-kullanici','ku-pin','ku-not'].forEach(id => document.getElementById(id).value = '');
+  kullanicilariGoster();
+  toast('Kullanıcı kaydedildi! 👤');
+}
+
+async function kullaniciDuzenle(id) {
+  const liste = await kullanicilarYukle();
+  const u = liste.find(u => u.id === id);
+  if (!u) return;
+  document.getElementById('ku-edit-id').value = u.id;
+  document.getElementById('ku-isim').value = u.isim;
+  document.getElementById('ku-kullanici').value = u.kullanici;
+  document.getElementById('ku-pin').value = u.pin;
+  document.getElementById('ku-rol').value = u.rol;
+  document.getElementById('ku-not').value = u.not || '';
+  modalAc('modal-kullanici');
+}
+
+async function kullaniciSil(id) {
+  const liste = await kullanicilarYukle();
+  const yeni = liste.filter(u => u.id !== id);
+  await USERS_REF.set({ liste: yeni });
+  kullanicilariGoster();
+  toast('Kullanıcı silindi', '🗑️');
+}
+
+// ════════════════════════════════════════════
+//   BAŞLAT
 // ════════════════════════════════════════════
 const _localCache = localStorage.getItem('santiyepro');
 if (_localCache) { try { veri = JSON.parse(_localCache); } catch(e) {} }
 panelGuncelle();
-yukle(); // async — Firebase'den yükle ve dinle
+
+// Oturum kontrolü
+const _oturum = sessionStorage.getItem('aktifKullanici');
+if (_oturum) {
+  try {
+    aktifKullanici = JSON.parse(_oturum);
+    girisBasarili();
+  } catch(e) {
+    sessionStorage.removeItem('aktifKullanici');
+  }
+}
+// Giriş ekranı zaten görünür (app-shell display:none)
 </script>
 </body>
 </html>
