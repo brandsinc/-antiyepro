@@ -373,7 +373,7 @@
 
 <!-- HEADER -->
 <!-- ── GİRİŞ EKRANI ── -->
-<div class="giris-ekrani" id="giris-ekrani">
+<div class="giris-ekrani" id="giris-ekrani" style="display:none">
   <div class="giris-kutu">
     <div class="giris-logo">
       <div class="giris-logo-ikon">🏗️</div>
@@ -402,7 +402,7 @@
   </div>
 </div>
 
-<div class="app-shell" id="app-shell" style="display:none">
+<div class="app-shell" id="app-shell">
 
   <!-- ── SIDEBAR ── -->
   <aside class="sidebar">
@@ -4807,17 +4807,11 @@ const _localCache = localStorage.getItem('santiyepro');
 if (_localCache) { try { veri = JSON.parse(_localCache); } catch(e) {} }
 panelGuncelle();
 
-// Oturum kontrolü
-const _oturum = sessionStorage.getItem('aktifKullanici');
-if (_oturum) {
-  try {
-    aktifKullanici = JSON.parse(_oturum);
-    girisBasarili();
-  } catch(e) {
-    sessionStorage.removeItem('aktifKullanici');
-  }
-}
-// Giriş ekranı zaten görünür (app-shell display:none)
+// Oturum kontrolü — giriş ekranını devre dışı bırak, direkt admin olarak gir
+aktifKullanici = { id: 'admin', isim: 'Yönetici', kullanici: 'admin', rol: 'admin' };
+sessionStorage.setItem('aktifKullanici', JSON.stringify(aktifKullanici));
+panelGuncelle();
+girisBasarili();
 </script>
 </body>
 </html>
