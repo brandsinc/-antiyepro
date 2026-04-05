@@ -292,6 +292,42 @@
   .ilerleme-bar-dolu { height: 100%; border-radius: 3px; transition: width 0.5s; }
   .ilerleme-slider { width: 100%; cursor: pointer; accent-color: var(--ana); margin-top: 4px; }
   .ilerleme-not { font-size: 0.75rem; color: var(--metin-acik); font-style: italic; margin-top: 4px; }
+  /* ── İŞ PROGRAMI ── */
+  .isp-tablo-kap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--sinir); }
+  .isp-tablo { border-collapse: collapse; width: 100%; font-size: 0.78rem; min-width: 1200px; }
+  .isp-tablo th { background: var(--header); color: white; padding: 6px 4px; text-align: center; font-size: 0.7rem; font-weight: 700; white-space: nowrap; border: 1px solid rgba(255,255,255,0.2); }
+  .isp-tablo th.col-adi { text-align: left; min-width: 200px; padding-left: 10px; }
+  .isp-tablo th.col-dar { min-width: 70px; }
+  .isp-tablo tr.grup-satir td { background: #dbeafe; font-weight: 700; color: var(--header); font-size: 0.8rem; padding: 6px 10px; border: 1px solid #bfdbfe; }
+  .isp-tablo tr.altgrup-satir td { background: #eff6ff; font-weight: 600; color: var(--ana); font-size: 0.77rem; padding: 5px 10px; border: 1px solid #dbeafe; }
+  .isp-tablo tr.kalem-satir td { background: white; padding: 4px; border: 1px solid var(--sinir); vertical-align: middle; }
+  .isp-tablo tr.kalem-satir:hover td { background: #f9fafb; }
+  .isp-tablo tr.toplam-satir td { background: #fef9c3; font-weight: 700; color: #92400e; border: 1px solid #fde68a; padding: 5px 4px; }
+  .isp-tablo tr.genel-toplam td { background: var(--header); color: #fbbf24; font-weight: 800; border: 1px solid #1e3a8a; padding: 6px 4px; }
+
+  /* Hafta kareleri */
+  .hafta-kare {
+    width: 20px; height: 22px; border: 1px solid #e5e7eb; border-radius: 3px;
+    cursor: pointer; display: inline-block; transition: all 0.1s;
+    background: white; margin: 1px;
+  }
+  .hafta-kare:hover { border-color: var(--ana); transform: scale(1.15); }
+  .hafta-kare.secili { background: var(--ana); border-color: #1d4ed8; }
+  .hafta-kare.secili-kirmizi { background: #dc2626; border-color: #991b1b; }
+  .hafta-kare.secili-yesil { background: #16a34a; border-color: #14532d; }
+  .hafta-kare.secili-sari { background: #f59e0b; border-color: #92400e; }
+  .ay-grup { display: inline-flex; gap: 1px; padding: 0 3px; border-right: 2px solid #e5e7eb; }
+  .ay-grup:last-child { border-right: none; }
+
+  .isp-kalem-input { border: none; background: none; width: 100%; font-size: 0.78rem; font-family: 'DM Sans',sans-serif; color: var(--metin); padding: 2px 4px; }
+  .isp-kalem-input:focus { outline: 1px solid var(--ana); border-radius: 3px; background: var(--ana-acik); }
+  .isp-tarih-badge { font-size: 0.68rem; color: var(--metin-acik); white-space: nowrap; margin-top: 2px; }
+
+  /* Renk seçici */
+  .renk-sec { display: flex; gap: 3px; }
+  .renk-sec-btn { width: 16px; height: 16px; border-radius: 3px; border: 2px solid transparent; cursor: pointer; transition: border-color 0.1s; }
+  .renk-sec-btn.aktif { border-color: var(--metin); }
+
   /* ── GİRİŞ EKRANI ── */
   .giris-ekrani {
     position: fixed; inset: 0; z-index: 9999;
@@ -392,6 +428,7 @@
       <div style="height:1px;background:rgba(255,255,255,0.1);margin:6px 8px"></div>
       <button class="nav-tab" onclick="sayfaGit('siparis')">📦 <span class="etiket">Sipariş</span></button>
       <button class="nav-tab" onclick="sayfaGit('ilerleme')">📐 <span class="etiket">İlerleme</span></button>
+      <button class="nav-tab" onclick="sayfaGit('isprogrami')">📅 <span class="etiket">İş Programı</span></button>
       <div id="admin-nav" style="display:none">
         <div style="height:1px;background:rgba(255,255,255,0.1);margin:6px 8px"></div>
         <button class="nav-tab" onclick="sayfaGit('kullanicilar')">👤 <span class="etiket">Kullanıcılar</span></button>
@@ -822,6 +859,72 @@
     <div id="ilerleme-listesi"></div>
   </div>
 
+  <!-- ═══════════════ İŞ PROGRAMI ═══════════════ -->
+  <div id="sayfa-isprogrami" class="sayfa">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:700;color:var(--metin)">📅 İş Programı</div>
+        <div style="font-size:0.8rem;color:var(--metin-acik);margin-top:2px">Haftalık Gantt çubuğu ile şantiye bazlı iş programı</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <select id="isp-santiye-sec" onchange="ispHazirla()" style="padding:8px 14px;border:1px solid var(--sinir);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.88rem;background:white">
+          <option value="">— Şantiye seçin —</option>
+        </select>
+        <button class="btn btn-mavi btn-sm" onclick="ispKalemEkle()">+ Kalem Ekle</button>
+        <button class="btn btn-yesil btn-sm" onclick="ispExcelIndir()">📥 Excel</button>
+        <button class="btn btn-yesil btn-sm" onclick="ispPdfIndir()">🖨️ PDF</button>
+      </div>
+    </div>
+
+    <!-- Proje Bilgileri -->
+    <div class="kart" style="padding:14px 16px;margin-bottom:12px" id="isp-proje-bilgi" style="display:none">
+      <div style="font-size:0.78rem;font-weight:700;color:var(--metin-acik);text-transform:uppercase;margin-bottom:10px">Proje Bilgileri</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px">
+        <div class="form-group" style="margin:0">
+          <label>İdare / Kurum</label>
+          <input type="text" id="isp-idare" placeholder="ör. Kayseri İl Milli Eğitim" oninput="ispBilgiKaydet()">
+        </div>
+        <div class="form-group" style="margin:0">
+          <label>Sözleşme Bedeli (TL)</label>
+          <input type="number" id="isp-sozlesme" placeholder="ör. 59500000" oninput="ispBilgiKaydet()">
+        </div>
+        <div class="form-group" style="margin:0">
+          <label>Sözleşme Tarihi</label>
+          <input type="date" id="isp-soz-tarih" onchange="ispBilgiKaydet()">
+        </div>
+        <div class="form-group" style="margin:0">
+          <label>İşe Başlama Tarihi</label>
+          <input type="date" id="isp-baslama" onchange="ispBilgiKaydet();ispTakvimGuncelle()">
+        </div>
+        <div class="form-group" style="margin:0">
+          <label>Bitiş Tarihi</label>
+          <input type="date" id="isp-bitis" onchange="ispBilgiKaydet();ispTakvimGuncelle()">
+        </div>
+        <div class="form-group" style="margin:0">
+          <label>Toplam Süre (Gün)</label>
+          <input type="number" id="isp-sure" placeholder="ör. 280" oninput="ispBilgiKaydet()">
+        </div>
+      </div>
+    </div>
+
+    <!-- Renk Açıklaması -->
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px;font-size:0.75rem;color:var(--metin-acik);align-items:center">
+      <span style="font-weight:600">Renk:</span>
+      <span><span style="display:inline-block;width:12px;height:12px;background:var(--ana);border-radius:2px;vertical-align:middle;margin-right:3px"></span>Çalışma</span>
+      <span><span style="display:inline-block;width:12px;height:12px;background:#16a34a;border-radius:2px;vertical-align:middle;margin-right:3px"></span>Kritik Yol</span>
+      <span><span style="display:inline-block;width:12px;height:12px;background:#f59e0b;border-radius:2px;vertical-align:middle;margin-right:3px"></span>Ödeme</span>
+      <span style="margin-left:auto;font-size:0.72rem">Karelere tıklayarak seçin · Sürükleyerek toplu seçim yapın</span>
+    </div>
+
+    <!-- Tablo -->
+    <div id="isp-tablo-kap">
+      <div class="bos-durum" style="background:white;border-radius:10px;border:1px solid var(--sinir)">
+        <div class="bos-durum-ikon">📅</div>
+        <div class="bos-durum-metin">Önce şantiye seçin, ardından kalem ekleyin.</div>
+      </div>
+    </div>
+  </div>
+
   <!-- ═══════════════ KULLANICILAR (ADMIN) ═══════════════ -->
   <div id="sayfa-kullanicilar" class="sayfa">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
@@ -837,6 +940,65 @@
     </div><!-- /main -->
   </div><!-- /content -->
 </div><!-- /app-shell -->
+
+<!-- İş Programı Kalem Modal -->
+<div class="modal-overlay" id="modal-isp-kalem">
+  <div class="modal">
+    <div class="modal-baslik">
+      📋 İş Kalemi Ekle
+      <button class="modal-kapat" onclick="modalKapat('modal-isp-kalem')">✕</button>
+    </div>
+    <input type="hidden" id="isp-edit-id">
+    <div class="form-group">
+      <label>Kalem Tipi</label>
+      <select id="isp-tip" onchange="ispTipDegis()">
+        <option value="kalem">📌 İş Kalemi</option>
+        <option value="bolum">📁 Bölüm Başlığı</option>
+        <option value="altbolum">📂 Alt Bölüm</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>İşin Cinsi / Adı *</label>
+      <input type="text" id="isp-adi" placeholder="ör. Beton Dökümü, Sıva İmalatları...">
+    </div>
+    <div id="isp-kalem-alanlari">
+      <div class="form-group">
+        <label>Kategori</label>
+        <select id="isp-kategori">
+          <option value="">— Kategori seç —</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Poz No</label>
+        <input type="text" id="isp-poz" placeholder="ör. 16.160.1006">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="form-group">
+          <label>Pursantaj (%) — Opsiyonel</label>
+          <input type="number" id="isp-purs" min="0" max="100" step="0.000001" placeholder="ör. 9.55">
+        </div>
+        <div class="form-group">
+          <label>Tutar (TL) — Opsiyonel</label>
+          <input type="number" id="isp-tutar" min="0" step="0.01" placeholder="ör. 5682996.73">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Gantt Rengi</label>
+        <div style="display:flex;gap:8px;margin-top:4px">
+          <div onclick="ispRenkSec('ana')" id="isp-renk-ana" style="width:28px;height:28px;border-radius:6px;background:var(--ana);cursor:pointer;border:3px solid var(--metin)"></div>
+          <div onclick="ispRenkSec('yesil')" id="isp-renk-yesil" style="width:28px;height:28px;border-radius:6px;background:#16a34a;cursor:pointer;border:3px solid transparent"></div>
+          <div onclick="ispRenkSec('sari')" id="isp-renk-sari" style="width:28px;height:28px;border-radius:6px;background:#f59e0b;cursor:pointer;border:3px solid transparent"></div>
+          <div onclick="ispRenkSec('kirmizi')" id="isp-renk-kirmizi" style="width:28px;height:28px;border-radius:6px;background:#dc2626;cursor:pointer;border:3px solid transparent"></div>
+        </div>
+        <input type="hidden" id="isp-renk" value="ana">
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-kirmizi" onclick="modalKapat('modal-isp-kalem')">İptal</button>
+      <button class="btn btn-sari" onclick="ispKalemKaydet()">✅ Kaydet</button>
+    </div>
+  </div>
+</div>
 
 <!-- Kullanıcı Modal -->
 <div class="modal-overlay" id="modal-kullanici">
@@ -1740,6 +1902,7 @@ function sayfaGit(id) {
   if (id === 'siparis') siparisHazirla();
   if (id === 'ilerleme') ilerlemeHazirla();
   if (id === 'kullanicilar') kullanicilariGoster();
+  if (id === 'isprogrami') { santiyeSecListesiniDoldur('isp-santiye-sec'); ispHazirla(); }
 }
 
 // ════════════════════════════════════════════
@@ -3671,8 +3834,343 @@ function anlasmalariGoster() {
 }
 
 // ════════════════════════════════════════════
-//   BAŞLAT
+//   İŞ PROGRAMI
 // ════════════════════════════════════════════
+let ispSeciliSantiye = null;
+let ispSeciliRenk = 'ana';
+let ispSurukleme = false;
+let ispSuruklemeRenk = null;
+
+const ISP_RENK_MAP = {
+  ana: '#2563eb', yesil: '#16a34a', sari: '#f59e0b', kirmizi: '#dc2626'
+};
+
+function ispAyListesi(baslama) {
+  const aylar = [];
+  const bas = baslama ? new Date(baslama) : new Date();
+  bas.setDate(1);
+  for (let i = 0; i < 20; i++) {
+    const d = new Date(bas.getFullYear(), bas.getMonth() + i, 1);
+    aylar.push({ yil: d.getFullYear(), ay: d.getMonth(), adi: d.toLocaleDateString('tr-TR',{month:'short'}), tam: d.toLocaleDateString('tr-TR',{month:'long',year:'numeric'}) });
+  }
+  return aylar;
+}
+
+function ispHazirla() {
+  santiyeSecListesiniDoldur('isp-santiye-sec');
+  const secili = document.getElementById('isp-santiye-sec').value;
+  if (!secili) {
+    ispSeciliSantiye = null;
+    document.getElementById('isp-tablo-kap').innerHTML = `<div class="bos-durum" style="background:white;border-radius:10px;border:1px solid var(--sinir)"><div class="bos-durum-ikon">📅</div><div class="bos-durum-metin">Önce şantiye seçin.</div></div>`;
+    return;
+  }
+  ispSeciliSantiye = secili;
+  if (!veri.isprogrami) veri.isprogrami = {};
+  if (!veri.isprogrami[secili]) veri.isprogrami[secili] = { bilgi:{}, kalemler:[] };
+  document.getElementById('isp-proje-bilgi').style.display = '';
+  ispBilgiYukle();
+  ispTabloGoster();
+}
+
+function ispBilgiYukle() {
+  if (!ispSeciliSantiye) return;
+  const bilgi = veri.isprogrami[ispSeciliSantiye]?.bilgi || {};
+  document.getElementById('isp-idare').value = bilgi.idare || '';
+  document.getElementById('isp-sozlesme').value = bilgi.sozlesme || '';
+  document.getElementById('isp-soz-tarih').value = bilgi.sozTarih || '';
+  const s = veri.santiyeler.find(s => s.id === ispSeciliSantiye);
+  document.getElementById('isp-baslama').value = bilgi.baslama || s?.baslangic || '';
+  document.getElementById('isp-bitis').value = bilgi.bitis || s?.bitis || '';
+  document.getElementById('isp-sure').value = bilgi.sure || '';
+}
+
+function ispBilgiKaydet() {
+  if (!ispSeciliSantiye) return;
+  if (!veri.isprogrami) veri.isprogrami = {};
+  if (!veri.isprogrami[ispSeciliSantiye]) veri.isprogrami[ispSeciliSantiye] = { bilgi:{}, kalemler:[] };
+  veri.isprogrami[ispSeciliSantiye].bilgi = {
+    idare: document.getElementById('isp-idare').value,
+    sozlesme: document.getElementById('isp-sozlesme').value,
+    sozTarih: document.getElementById('isp-soz-tarih').value,
+    baslama: document.getElementById('isp-baslama').value,
+    bitis: document.getElementById('isp-bitis').value,
+    sure: document.getElementById('isp-sure').value,
+  };
+  kaydet();
+}
+
+function ispTakvimGuncelle() { if (ispSeciliSantiye) ispTabloGoster(); }
+
+function ispHaftaTarih(hafKey, baslama, aylar, bitismi = false) {
+  if (!hafKey || !baslama || !aylar) return null;
+  const parts = hafKey.split('_');
+  const ai = parseInt(parts[0]), hi = parseInt(parts[1]);
+  if (isNaN(ai) || !aylar[ai]) return null;
+  const ay = aylar[ai];
+  const gun = 1 + hi * 7 + (bitismi ? 6 : 0);
+  const d = new Date(ay.yil, ay.ay, gun);
+  return d.toLocaleDateString('tr-TR', {day:'2-digit', month:'2-digit', year:'numeric'});
+}
+
+function ispGetKalem(id) {
+  if (!ispSeciliSantiye || !veri.isprogrami?.[ispSeciliSantiye]) return null;
+  return veri.isprogrami[ispSeciliSantiye].kalemler.find(k => k.id === id);
+}
+
+function ispTabloGoster() {
+  if (!ispSeciliSantiye) return;
+  const data = veri.isprogrami?.[ispSeciliSantiye] || { bilgi:{}, kalemler:[] };
+  const kalemler = data.kalemler || [];
+  const bilgi = data.bilgi || {};
+  const baslama = bilgi.baslama || veri.santiyeler.find(s=>s.id===ispSeciliSantiye)?.baslangic || null;
+  const aylar = ispAyListesi(baslama);
+  const hafSayisi = aylar.length * 4;
+
+  let html = `<div class="isp-tablo-kap"><table class="isp-tablo" id="isp-tablo">`;
+
+  // Başlık satırı 1
+  html += `<thead><tr>
+    <th class="col-adi" rowspan="2">İŞİN CİNSİ</th>
+    <th class="col-dar" rowspan="2" style="min-width:55px">PURS%</th>
+    <th class="col-dar" rowspan="2" style="min-width:90px">TUTAR (TL)</th>
+    <th class="col-dar" rowspan="2" style="min-width:80px">POZ NO</th>
+    <th class="col-dar" rowspan="2" style="min-width:75px">BAŞ.</th>
+    <th class="col-dar" rowspan="2" style="min-width:75px">BİT.</th>`;
+  aylar.forEach(a => {
+    html += `<th colspan="4" style="border-left:2px solid rgba(255,255,255,0.4);min-width:88px">${a.adi} <span style="font-size:0.6rem;opacity:0.7">'${String(a.yil).slice(2)}</span></th>`;
+  });
+  html += `<th rowspan="2" style="min-width:60px">İŞLEM</th></tr><tr>`;
+  aylar.forEach((a,i) => {
+    [1,2,3,4].forEach(h => {
+      html += `<th style="font-size:0.6rem;opacity:0.7;padding:2px;${h===1?'border-left:2px solid rgba(255,255,255,0.4)':''}">H${h}</th>`;
+    });
+  });
+  html += `</tr></thead><tbody>`;
+
+  if (kalemler.length === 0) {
+    html += `<tr><td colspan="${6+hafSayisi+1}" style="text-align:center;padding:24px;color:var(--metin-acik)">Henüz kalem eklenmedi.</td></tr>`;
+  } else {
+    // Toplam satırı için
+    let topPurs = 0, topTutar = 0;
+
+    kalemler.forEach((k, ki) => {
+      if (k.tip === 'bolum') {
+        html += `<tr class="grup-satir"><td colspan="${6+hafSayisi+1}" style="padding-left:8px">
+          📁 ${k.adi}
+          <button class="btn btn-sm" style="float:right;background:rgba(220,38,38,0.15);border:none;color:#dc2626;font-size:0.7rem" onclick="ispKalemSil('${k.id}')">🗑️</button>
+          <button class="btn btn-sm" style="float:right;background:rgba(37,99,235,0.15);border:none;color:var(--ana);font-size:0.7rem;margin-right:4px" onclick="ispKalemDuzenle('${k.id}')">✏️</button>
+        </td></tr>`;
+      } else if (k.tip === 'altbolum') {
+        html += `<tr class="altgrup-satir"><td colspan="${6+hafSayisi+1}" style="padding-left:22px">
+          📂 ${k.adi}
+          <button class="btn btn-sm" style="float:right;background:rgba(220,38,38,0.15);border:none;color:#dc2626;font-size:0.7rem" onclick="ispKalemSil('${k.id}')">🗑️</button>
+          <button class="btn btn-sm" style="float:right;background:rgba(37,99,235,0.15);border:none;color:var(--ana);font-size:0.7rem;margin-right:4px" onclick="ispKalemDuzenle('${k.id}')">✏️</button>
+        </td></tr>`;
+      } else {
+        if (k.purs) topPurs += parseFloat(k.purs)||0;
+        if (k.tutar) topTutar += parseFloat(k.tutar)||0;
+
+        const seciliList = Object.keys(k.haftalar||{}).filter(h => k.haftalar[h]).sort((a,b) => {
+          const [ai,hi] = a.split('_').map(Number), [bi,bj] = b.split('_').map(Number);
+          return ai !== bi ? ai-bi : hi-bj;
+        });
+        const basTarih = ispHaftaTarih(seciliList[0], baslama, aylar);
+        const bitTarih = ispHaftaTarih(seciliList[seciliList.length-1], baslama, aylar, true);
+        const renkHex = ISP_RENK_MAP[k.renk||'ana'];
+
+        html += `<tr class="kalem-satir" data-id="${k.id}">
+          <td style="padding-left:32px">
+            <div style="font-weight:600;font-size:0.8rem">${k.adi}</div>
+            ${k.kategori ? `<div style="font-size:0.68rem;color:var(--metin-acik)">${kalemBul(k.kategori)?.ikon||''} ${kalemBul(k.kategori)?.adi||k.kategori}</div>` : ''}
+          </td>
+          <td style="text-align:center;font-size:0.75rem;color:var(--metin-acik)">${k.purs ? parseFloat(k.purs).toFixed(4)+'%' : '<span style="color:#d1d5db">—</span>'}</td>
+          <td style="text-align:right;font-size:0.75rem">${k.tutar ? parseFloat(k.tutar).toLocaleString('tr-TR',{maximumFractionDigits:0}) : '<span style="color:#d1d5db">—</span>'}</td>
+          <td style="text-align:center;font-size:0.68rem;color:var(--ana)">${k.poz||'—'}</td>
+          <td style="text-align:center;font-size:0.7rem;color:var(--yesil);font-weight:600">${basTarih||'—'}</td>
+          <td style="text-align:center;font-size:0.7rem;color:#dc2626;font-weight:600">${bitTarih||'—'}</td>`;
+
+        aylar.forEach((a, ai) => {
+          [0,1,2,3].forEach(hi => {
+            const hafKey = `${ai}_${hi}`;
+            const secili = !!(k.haftalar||{})[hafKey];
+            html += `<td style="padding:2px;text-align:center;${hi===0?'border-left:2px solid #e5e7eb':''}">
+              <div class="hafta-kare ${secili?'secili':''}"
+                style="${secili?`background:${renkHex};border-color:${renkHex}`:''}"
+                onmousedown="ispMousedown('${k.id}','${hafKey}',this)"
+                onmouseenter="ispMouseenter('${k.id}','${hafKey}',this)"
+                onmouseup="ispMouseup()"
+                title="${a.tam} ${hi+1}. Hafta">
+              </div>
+            </td>`;
+          });
+        });
+
+        html += `<td style="text-align:center;white-space:nowrap">
+          <button class="btn btn-mavi btn-sm" onclick="ispKalemDuzenle('${k.id}')">✏️</button>
+          <button class="btn btn-kirmizi btn-sm" onclick="ispKalemSil('${k.id}')">🗑️</button>
+        </td></tr>`;
+      }
+    });
+
+    // Genel toplam
+    html += `<tr class="genel-toplam">
+      <td style="padding-left:8px">GENEL TOPLAM</td>
+      <td style="text-align:center">${topPurs>0?topPurs.toFixed(4)+'%':'—'}</td>
+      <td style="text-align:right">${topTutar>0?topTutar.toLocaleString('tr-TR',{maximumFractionDigits:0})+' TL':'—'}</td>
+      <td colspan="${3+hafSayisi+1}"></td>
+    </tr>`;
+  }
+
+  html += `</tbody></table></div>`;
+  document.getElementById('isp-tablo-kap').innerHTML = html;
+}
+
+function ispMousedown(kalemId, hafKey, el) {
+  ispSurukleme = true;
+  const k = ispGetKalem(kalemId);
+  if (!k) return;
+  if (!k.haftalar) k.haftalar = {};
+  const yeni = !k.haftalar[hafKey];
+  ispSuruklemeRenk = yeni;
+  k.haftalar[hafKey] = yeni;
+  const renkHex = ISP_RENK_MAP[k.renk||'ana'];
+  el.style.background = yeni ? renkHex : '';
+  el.style.borderColor = yeni ? renkHex : '';
+  el.classList.toggle('secili', yeni);
+  ispTarihGuncelle(kalemId);
+  clearTimeout(window._ispTimer);
+  window._ispTimer = setTimeout(() => kaydet(), 800);
+}
+
+function ispMouseenter(kalemId, hafKey, el) {
+  if (!ispSurukleme) return;
+  const k = ispGetKalem(kalemId);
+  if (!k) return;
+  if (!k.haftalar) k.haftalar = {};
+  k.haftalar[hafKey] = ispSuruklemeRenk;
+  const renkHex = ISP_RENK_MAP[k.renk||'ana'];
+  el.style.background = ispSuruklemeRenk ? renkHex : '';
+  el.style.borderColor = ispSuruklemeRenk ? renkHex : '';
+  el.classList.toggle('secili', ispSuruklemeRenk);
+  ispTarihGuncelle(kalemId);
+}
+
+function ispMouseup() { ispSurukleme = false; }
+
+function ispTarihGuncelle(kalemId) {
+  const k = ispGetKalem(kalemId);
+  if (!k) return;
+  const bilgi = veri.isprogrami?.[ispSeciliSantiye]?.bilgi || {};
+  const baslama = bilgi.baslama || veri.santiyeler.find(s=>s.id===ispSeciliSantiye)?.baslangic;
+  const aylar = ispAyListesi(baslama);
+  const seciliList = Object.keys(k.haftalar||{}).filter(h=>k.haftalar[h]).sort((a,b)=>{
+    const [ai,hi]=a.split('_').map(Number),[bi,bj]=b.split('_').map(Number);
+    return ai!==bi?ai-bi:hi-bj;
+  });
+  const basTarih = ispHaftaTarih(seciliList[0], baslama, aylar) || '—';
+  const bitTarih = ispHaftaTarih(seciliList[seciliList.length-1], baslama, aylar, true) || '—';
+  const satir = document.querySelector(`[data-id="${kalemId}"]`);
+  if (satir) {
+    const tds = satir.querySelectorAll('td');
+    if (tds[4]) tds[4].textContent = basTarih;
+    if (tds[5]) tds[5].textContent = bitTarih;
+  }
+}
+
+function ispTipDegis() {
+  const tip = document.getElementById('isp-tip').value;
+  document.getElementById('isp-kalem-alanlari').style.display = tip === 'kalem' ? '' : 'none';
+}
+
+function ispRenkSec(renk) {
+  ispSeciliRenk = renk;
+  document.getElementById('isp-renk').value = renk;
+  ['ana','yesil','sari','kirmizi'].forEach(r => {
+    const el = document.getElementById('isp-renk-'+r);
+    if (el) el.style.borderColor = r === renk ? 'var(--metin)' : 'transparent';
+  });
+}
+
+function ispKalemEkle() {
+  if (!ispSeciliSantiye) { toast('Önce şantiye seçin!','⚠️'); return; }
+  const katSel = document.getElementById('isp-kategori');
+  katSel.innerHTML = '<option value="">— Kategori seç —</option>';
+  Object.entries(IS_KATEGORILERI).forEach(([,kat]) => {
+    katSel.innerHTML += `<optgroup label="${kat.adi}">`;
+    kat.kalemler.forEach(k => katSel.innerHTML += `<option value="${k.id}">${k.ikon} ${k.adi}</option>`);
+    katSel.innerHTML += '</optgroup>';
+  });
+  ['isp-edit-id','isp-adi','isp-poz','isp-purs','isp-tutar'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('isp-tip').value = 'kalem';
+  ispTipDegis();
+  ispRenkSec('ana');
+  modalAc('modal-isp-kalem');
+}
+
+function ispKalemDuzenle(id) {
+  const k = ispGetKalem(id);
+  if (!k) return;
+  const katSel = document.getElementById('isp-kategori');
+  katSel.innerHTML = '<option value="">— Kategori seç —</option>';
+  Object.entries(IS_KATEGORILERI).forEach(([,kat]) => {
+    katSel.innerHTML += `<optgroup label="${kat.adi}">`;
+    kat.kalemler.forEach(kl => katSel.innerHTML += `<option value="${kl.id}">${kl.ikon} ${kl.adi}</option>`);
+    katSel.innerHTML += '</optgroup>';
+  });
+  document.getElementById('isp-edit-id').value = k.id;
+  document.getElementById('isp-tip').value = k.tip||'kalem';
+  document.getElementById('isp-adi').value = k.adi;
+  document.getElementById('isp-kategori').value = k.kategori||'';
+  document.getElementById('isp-poz').value = k.poz||'';
+  document.getElementById('isp-purs').value = k.purs||'';
+  document.getElementById('isp-tutar').value = k.tutar||'';
+  ispTipDegis();
+  ispRenkSec(k.renk||'ana');
+  modalAc('modal-isp-kalem');
+}
+
+function ispKalemKaydet() {
+  const adi = document.getElementById('isp-adi').value.trim();
+  if (!adi) { toast('Kalem adı zorunlu!','⚠️'); return; }
+  if (!veri.isprogrami) veri.isprogrami = {};
+  if (!veri.isprogrami[ispSeciliSantiye]) veri.isprogrami[ispSeciliSantiye] = { bilgi:{}, kalemler:[] };
+  const editId = document.getElementById('isp-edit-id').value;
+  const tip = document.getElementById('isp-tip').value;
+  const kayit = {
+    id: editId || uid(), tip, adi,
+    kategori: document.getElementById('isp-kategori').value,
+    poz: document.getElementById('isp-poz').value.trim(),
+    purs: document.getElementById('isp-purs').value || null,
+    tutar: document.getElementById('isp-tutar').value || null,
+    renk: ispSeciliRenk
+  };
+  const liste = veri.isprogrami[ispSeciliSantiye].kalemler;
+  if (editId) {
+    const idx = liste.findIndex(k=>k.id===editId);
+    if (idx>-1) { kayit.haftalar = liste[idx].haftalar||{}; liste[idx] = kayit; }
+  } else {
+    kayit.haftalar = {};
+    liste.push(kayit);
+  }
+  kaydet();
+  modalKapat('modal-isp-kalem');
+  ispTabloGoster();
+  toast('Kalem kaydedildi! 📋');
+}
+
+function ispKalemSil(id) {
+  if (!veri.isprogrami?.[ispSeciliSantiye]) return;
+  veri.isprogrami[ispSeciliSantiye].kalemler = veri.isprogrami[ispSeciliSantiye].kalemler.filter(k=>k.id!==id);
+  kaydet(); ispTabloGoster(); toast('Kalem silindi','🗑️');
+}
+
+function ispExcelIndir() { toast('Excel çıktısı yakında ekleniyor 🔧','⚠️'); }
+function ispPdfIndir() {
+  if (!ispSeciliSantiye) { toast('Önce şantiye seçin!','⚠️'); return; }
+  window.print();
+}
+
+document.addEventListener('mouseup', () => { ispSurukleme = false; });
 
 // ── Güvenli silme: data-attribute tabanlı ──
 document.addEventListener('click', function(e) {
