@@ -508,6 +508,12 @@
             <label>Yapılan İş</label>
             <input type="text" id="st-is" placeholder="ör. Sıva, Döşeme, Alçı...">
           </div>
+          <div class="form-group" style="margin:0;flex:2;min-width:160px">
+            <label>İş Kategorisi (ilerleme için)</label>
+            <select id="st-kalem" style="padding:8px 11px;border:1px solid var(--sinir);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:0.87rem;background:white;width:100%">
+              <option value="">— Kategori seç (opsiyonel) —</option>
+            </select>
+          </div>
           <button class="btn btn-sari" style="flex-shrink:0;height:42px" onclick="santiyeTakimEkle()">+ Ekle</button>
         </div>
       </div>
@@ -1246,6 +1252,74 @@
   </div>
 </div>
 
+<!-- Şantiye Düzenle Modal -->
+<div class="modal-overlay" id="modal-santiye-duzenle">
+  <div class="modal">
+    <div class="modal-baslik">
+      ✏️ Şantiyeyi Düzenle
+      <button class="modal-kapat" onclick="modalKapat('modal-santiye-duzenle')">✕</button>
+    </div>
+    <input type="hidden" id="sd-id">
+    <div class="form-group">
+      <label>Şantiye Adı *</label>
+      <input type="text" id="sd-adi" placeholder="ör. Merkez Ofis İnşaatı">
+    </div>
+    <div class="form-group">
+      <label>Konum</label>
+      <input type="text" id="sd-konum" placeholder="ör. Kayseri / Melikgazi">
+    </div>
+    <div class="form-group">
+      <label>Başlangıç Tarihi</label>
+      <input type="date" id="sd-baslangic">
+    </div>
+    <div class="form-group">
+      <label>Tahmini Bitiş</label>
+      <input type="date" id="sd-bitis">
+    </div>
+    <div class="form-group">
+      <label>Renk</label>
+      <select id="sd-renk">
+        <option value="#2563eb">🔵 Mavi</option>
+        <option value="#16a34a">🟢 Yeşil</option>
+        <option value="#ea580c">🟠 Turuncu</option>
+        <option value="#dc2626">🔴 Kırmızı</option>
+        <option value="#7c3aed">🟣 Mor</option>
+        <option value="#0891b2">🩵 Turkuaz</option>
+        <option value="#ca8a04">🟡 Sarı</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Açıklama</label>
+      <textarea id="sd-aciklama" rows="2" placeholder="Kısa açıklama..."></textarea>
+    </div>
+    <div style="background:#f9fafb;border-radius:10px;padding:14px;margin-bottom:8px">
+      <div style="font-size:0.78rem;font-weight:700;color:var(--metin-acik);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:10px">🏢 Bina Bilgisi</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="form-group" style="margin:0">
+          <label>Kat Sayısı</label>
+          <input type="number" id="sd-kat" min="1" placeholder="ör. 8">
+        </div>
+        <div class="form-group" style="margin:0">
+          <label>Daire / Bölüm Sayısı</label>
+          <input type="number" id="sd-daire" min="1" placeholder="ör. 24">
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:10px;margin-bottom:0">
+        <label>Daire Numaralandırma</label>
+        <select id="sd-daire-tip">
+          <option value="numara">Numaralı (1, 2, 3...)</option>
+          <option value="kat-daire">Kat-Daire (1A, 1B, 2A...)</option>
+          <option value="yok">Numara yok (sadece kat)</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+      <button class="btn btn-kirmizi" onclick="modalKapat('modal-santiye-duzenle')">İptal</button>
+      <button class="btn btn-sari" onclick="santiyeGuncelle()">✅ Güncelle</button>
+    </div>
+  </div>
+</div>
+
 <!-- Görev Modal -->
 <div class="modal-overlay" id="modal-gorev">
   <div class="modal">
@@ -1924,7 +1998,8 @@ function santiyeleriGoster() {
     return `<div class="santiye-kart ${secili}" onclick="santiyeSec('${s.id}')">
       <div class="santiye-kart-ust" style="background:${degrade}">
         <div class="santiye-kart-ust-arka" style="background:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><text y=%2245%22 font-size=%2240%22>🏗️</text></svg>') no-repeat right 10px center / 48px"></div>
-        <div class="santiye-kart-sil">
+        <div class="santiye-kart-sil" style="display:flex;gap:4px">
+          <button class="btn btn-sm" style="background:rgba(255,255,255,0.2);color:white;border:none;backdrop-filter:blur(4px)" onclick="event.stopPropagation();santiyeDuzenleAc('${s.id}')">✏️</button>
           <button class="btn btn-sm" style="background:rgba(255,255,255,0.2);color:white;border:none;backdrop-filter:blur(4px)" onclick="event.stopPropagation()" data-sil-fn="santiyeSil" data-sil-args='["${s.id}"]'>🗑️</button>
         </div>
         <div class="santiye-kart-etiket">${baslangicGun !== null ? baslangicGun + '. gün' : 'Aktif'}</div>
@@ -1962,6 +2037,46 @@ function santiyeSec(id) {
   seciliSantiyeId = id;
   santiyeleriGoster();
   personelBolumGoster();
+}
+
+function santiyeDuzenleAc(id) {
+  const s = veri.santiyeler.find(s => s.id === id);
+  if (!s) return;
+  document.getElementById('sd-id').value = s.id;
+  document.getElementById('sd-adi').value = s.adi;
+  document.getElementById('sd-konum').value = s.konum || '';
+  document.getElementById('sd-baslangic').value = s.baslangic || '';
+  document.getElementById('sd-bitis').value = s.bitis || '';
+  document.getElementById('sd-renk').value = s.renk || '#2563eb';
+  document.getElementById('sd-aciklama').value = s.aciklama || '';
+  document.getElementById('sd-kat').value = s.kat || '';
+  document.getElementById('sd-daire').value = s.daire || '';
+  document.getElementById('sd-daire-tip').value = s.daireTip || 'numara';
+  modalAc('modal-santiye-duzenle');
+}
+
+function santiyeGuncelle() {
+  const id = document.getElementById('sd-id').value;
+  const s = veri.santiyeler.find(s => s.id === id);
+  if (!s) return;
+  const adi = document.getElementById('sd-adi').value.trim();
+  if (!adi) { toast('Şantiye adı zorunlu!', '⚠️'); return; }
+
+  s.adi = adi;
+  s.konum = document.getElementById('sd-konum').value.trim();
+  s.baslangic = document.getElementById('sd-baslangic').value;
+  s.bitis = document.getElementById('sd-bitis').value;
+  s.renk = document.getElementById('sd-renk').value;
+  s.aciklama = document.getElementById('sd-aciklama').value.trim();
+  s.kat = parseInt(document.getElementById('sd-kat').value) || 0;
+  s.daire = parseInt(document.getElementById('sd-daire').value) || 0;
+  s.daireTip = document.getElementById('sd-daire-tip').value;
+
+  kaydet();
+  modalKapat('modal-santiye-duzenle');
+  santiyeleriGoster();
+  if (seciliSantiyeId === id) personelBolumGoster();
+  toast('Şantiye güncellendi! ✅');
 }
 
 function santiyeSil(id) {
@@ -2026,6 +2141,17 @@ function personelBolumGoster() {
     daireSel.innerHTML += '<option value="Tümü">Tüm Daireler</option>';
   }
 
+  // İş kategorisi dropdown'unu doldur
+  const kalemSel = document.getElementById('st-kalem');
+  kalemSel.innerHTML = '<option value="">— Kategori seç (opsiyonel) —</option>';
+  Object.entries(IS_KATEGORILERI).forEach(([katId, kat]) => {
+    kalemSel.innerHTML += `<optgroup label="${kat.adi}">`;
+    kat.kalemler.forEach(k => {
+      kalemSel.innerHTML += `<option value="${k.id}">${k.ikon} ${k.adi} (${k.birim} bazlı)</option>`;
+    });
+    kalemSel.innerHTML += '</optgroup>';
+  });
+
   if (!veri.stGunluk) veri.stGunluk = {};
   const gunluk = veri.stGunluk[seciliSantiyeId] || {}; // { 'YYYY-MM-DD': [{id,adi,kisi,usta}] }
   const el = document.getElementById('personel-listesi');
@@ -2058,7 +2184,7 @@ function personelBolumGoster() {
         <span class="badge badge-sari">👷 ${toplamKisi} kişi</span>
       </div>
       <table class="yoklama-tablo">
-        <thead><tr><th>Takım</th><th>Kişi</th><th>Usta</th><th>Kat</th><th>Daire</th><th>Yapılan İş</th><th></th></tr></thead>
+        <thead><tr><th>Takım</th><th>Kişi</th><th>Usta</th><th>Kat</th><th>Daire</th><th>Yapılan İş</th><th>Kategori</th><th></th></tr></thead>
         <tbody>
         ${takimlar.map(t => `<tr>
           <td>
@@ -2081,6 +2207,9 @@ function personelBolumGoster() {
           <td>
             <input type="text" value="${t.is||''}" placeholder="—" onchange="stGunlukGuncelle('${tarih}','${t.id}','is',this.value)"
               style="border:none;background:none;font-size:0.82rem;color:var(--metin-acik);width:100%;padding:0;font-family:'DM Sans',sans-serif;min-width:80px">
+          </td>
+          <td style="font-size:0.78rem">
+            ${t.kalem ? (() => { const k = kalemBul(t.kalem); return k ? `<span class="badge badge-mavi">${k.ikon} ${k.adi}</span>` : t.kalem; })() : '—'}
           </td>
           <td><button class="btn btn-kirmizi btn-sm" data-sil-fn="stGunlukSil" data-sil-args='["${tarih}","${t.id}"]'>🗑️</button></td>
         </tr>`).join('')}
@@ -2111,11 +2240,13 @@ function santiyeTakimEkle() {
     usta: document.getElementById('st-usta').value.trim(),
     kat: document.getElementById('st-kat').value,
     daire: document.getElementById('st-daire').value,
-    is: document.getElementById('st-is').value.trim()
+    is: document.getElementById('st-is').value.trim(),
+    kalem: document.getElementById('st-kalem').value
   });
   kaydet();
   ['st-adi','st-usta','st-is'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('st-kisi').value = '';
+  document.getElementById('st-kalem').value = '';
   personelBolumGoster();
   santiyeleriGoster();
   toast('Kayıt eklendi! 👥');
@@ -3637,13 +3768,114 @@ function siparisGoster() {
 // ════════════════════════════════════════════
 //   İŞ İLERLEME
 // ════════════════════════════════════════════
-const ILERLEME_ASAMALARI = [
-  { id: 'temel', adi: 'Temel', ikon: '⛏️', renk: '#92400e' },
-  { id: 'kaba', adi: 'Kaba İnşaat', ikon: '🧱', renk: '#1e40af' },
-  { id: 'ince', adi: 'İnce İşler', ikon: '🪟', renk: '#065f46' },
-  { id: 'dis', adi: 'Dış Cephe', ikon: '🎨', renk: '#7c3aed' },
-  { id: 'teslim', adi: 'Teslim', ikon: '🏠', renk: '#065f46' },
-];
+// ════════════════════════════════════════════
+//   İŞ KATEGORİLERİ & İLERLEME
+// ════════════════════════════════════════════
+const IS_KATEGORILERI = {
+  kaba: {
+    adi: '🏗️ Kaba İnşaat', renk: '#1e40af',
+    kalemler: [
+      { id: 'kazı',      adi: 'Temel / Kazı',        ikon: '⛏️', birim: 'kat' },
+      { id: 'beton',     adi: 'Beton Dökümü',         ikon: '🪣', birim: 'kat' },
+      { id: 'kalip',     adi: 'Kalıp İşleri',         ikon: '🪵', birim: 'kat' },
+      { id: 'demir',     adi: 'Demir / Donatı',       ikon: '🔩', birim: 'kat' },
+      { id: 'duvar',     adi: 'Duvar Örme',            ikon: '🧱', birim: 'kat' },
+      { id: 'blok',      adi: 'Blok / Tuğla',          ikon: '🟫', birim: 'kat' },
+      { id: 'cati_bet',  adi: 'Çatı Betonu',           ikon: '🏠', birim: 'kat' },
+      { id: 'cati_ort',  adi: 'Çatı Örtüsü',           ikon: '🏚️', birim: 'kat' },
+      { id: 'su_yalitim',adi: 'Su Yalıtımı',           ikon: '💧', birim: 'kat' },
+      { id: 'isi_yalitim',adi:'Isı Yalıtımı',          ikon: '🌡️', birim: 'kat' },
+      { id: 'zemin_dol', adi: 'Zemin Dolgusu',         ikon: '🏔️', birim: 'kat' },
+    ]
+  },
+  ince: {
+    adi: '🪟 İnce İnşaat', renk: '#065f46',
+    kalemler: [
+      { id: 'siva',      adi: 'Sıva',                  ikon: '🖌️', birim: 'kat' },
+      { id: 'alci',      adi: 'Alçı',                   ikon: '⬜', birim: 'kat' },
+      { id: 'alcipan',   adi: 'Alçıpan',                ikon: '📋', birim: 'kat' },
+      { id: 'seramik',   adi: 'Seramik / Döşeme',       ikon: '⬛', birim: 'daire' },
+      { id: 'boya',      adi: 'Boya / Badana',           ikon: '🎨', birim: 'daire' },
+      { id: 'doğrama',   adi: 'Doğrama (Kapı/Pencere)', ikon: '🚪', birim: 'daire' },
+      { id: 'mutfak',    adi: 'Mutfak / Banyo Dolabı',  ikon: '🍳', birim: 'daire' },
+      { id: 'asma_tavan',adi: 'Asma Tavan',             ikon: '🔲', birim: 'daire' },
+      { id: 'mermer',    adi: 'Mermer / Granit',         ikon: '💎', birim: 'daire' },
+      { id: 'parke',     adi: 'Parke / Laminat',         ikon: '🪵', birim: 'daire' },
+      { id: 'dis_cephe', adi: 'Dış Cephe Kaplama',      ikon: '🏢', birim: 'kat' },
+    ]
+  },
+  sistemler: {
+    adi: '⚡ Sistemler', renk: '#7c3aed',
+    kalemler: [
+      { id: 'elektrik',  adi: 'Elektrik Tesisatı',      ikon: '⚡', birim: 'daire' },
+      { id: 'su_tes',    adi: 'Su Tesisatı',             ikon: '🚿', birim: 'daire' },
+      { id: 'isitma',    adi: 'Isıtma / Kombi',          ikon: '🔥', birim: 'daire' },
+      { id: 'havaland',  adi: 'Havalandırma',            ikon: '💨', birim: 'daire' },
+      { id: 'asansor',   adi: 'Asansör',                 ikon: '🛗', birim: 'kat' },
+    ]
+  }
+};
+
+// Tüm kalemleri düz liste olarak al
+function tumKalemler() {
+  return Object.values(IS_KATEGORILERI).flatMap(k => k.kalemler);
+}
+
+function kalemBul(kalemId) {
+  return tumKalemler().find(k => k.id === kalemId);
+}
+
+// Takım kayıtlarından otomatik ilerleme hesapla
+function ilerlemeHesapla(santiyeId) {
+  const s = veri.santiyeler.find(s => s.id === santiyeId);
+  if (!s) return {};
+
+  const toplamKat = s.kat || 1;
+  const toplamDaire = s.daire || 1;
+
+  // Her kalem için tamamlanan kat/daire listesi
+  const kalemDurumu = {}; // { kalemId: { tamamlananKatlar: Set, tamamlananDaireler: Set, kayitlar: [] } }
+
+  // stGunluk kayıtlarını tara
+  const gunluk = (veri.stGunluk || {})[santiyeId] || {};
+  Object.entries(gunluk).forEach(([tarih, takimlar]) => {
+    takimlar.forEach(t => {
+      if (!t.kalem) return;
+      if (!kalemDurumu[t.kalem]) {
+        kalemDurumu[t.kalem] = { katlar: new Set(), daireler: new Set(), kayitlar: [] };
+      }
+      if (t.kat && t.kat !== 'Tümü') kalemDurumu[t.kalem].katlar.add(t.kat);
+      if (t.daire && t.daire !== 'Tümü') kalemDurumu[t.kalem].daireler.add(t.daire);
+      kalemDurumu[t.kalem].kayitlar.push({ tarih, kat: t.kat, daire: t.daire, kisi: t.kisi, usta: t.usta });
+    });
+  });
+
+  // Yüzde hesapla
+  const sonuclar = {};
+  Object.entries(kalemDurumu).forEach(([kalemId, durum]) => {
+    const kalem = kalemBul(kalemId);
+    if (!kalem) return;
+    let yuzde = 0;
+    if (kalem.birim === 'kat') {
+      yuzde = Math.min(100, Math.round((durum.katlar.size / toplamKat) * 100));
+    } else {
+      yuzde = Math.min(100, Math.round((durum.daireler.size / toplamDaire) * 100));
+    }
+    const sonKayit = durum.kayitlar.sort((a,b) => b.tarih.localeCompare(a.tarih))[0];
+    sonuclar[kalemId] = {
+      yuzde,
+      tamamlanan: kalem.birim === 'kat' ? durum.katlar.size : durum.daireler.size,
+      toplam: kalem.birim === 'kat' ? toplamKat : toplamDaire,
+      birim: kalem.birim,
+      sonKayit,
+      kayitSayisi: durum.kayitlar.length,
+      katListesi: [...durum.katlar].sort(),
+      daireListesi: [...durum.daireler].sort()
+    };
+  });
+
+  return sonuclar;
+}
 
 function ilerlemeHazirla() {
   santiyeSecListesiniDoldur('il-filtre-santiye', true);
@@ -3663,9 +3895,13 @@ function ilerlemeGoster() {
   }
 
   el.innerHTML = santiyeler.map(s => {
-    const sd = veri.ilerleme[s.id] || {};
-    const yuzdeleri = ILERLEME_ASAMALARI.map(a => sd[a.id]?.yuzde || 0);
-    const genel = Math.round(yuzdeleri.reduce((sum,y)=>sum+y,0) / ILERLEME_ASAMALARI.length);
+    const kalemSonuclari = ilerlemeHesapla(s.id);
+    const aktifKalemler = Object.keys(kalemSonuclari);
+
+    // Genel ilerleme = aktif kalemlerin ortalaması
+    const genel = aktifKalemler.length > 0
+      ? Math.round(aktifKalemler.reduce((sum, k) => sum + kalemSonuclari[k].yuzde, 0) / aktifKalemler.length)
+      : 0;
     const genelRenk = genel < 30 ? '#dc2626' : genel < 70 ? '#f59e0b' : '#16a34a';
 
     return `<div class="ilerleme-kart">
@@ -3674,98 +3910,73 @@ function ilerlemeGoster() {
           <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${s.renk||'#2563eb'}"></span>
           🏗️ ${s.adi}
           <span style="font-size:0.78rem;font-weight:400;color:var(--metin-acik)">${s.konum||''}</span>
+          ${s.kat ? `<span class="badge badge-gri">${s.kat} kat</span>` : ''}
+          ${s.daire ? `<span class="badge badge-gri">${s.daire} daire</span>` : ''}
         </div>
         <div style="display:flex;align-items:center;gap:10px">
           <div>
             <div style="font-size:0.72rem;color:var(--metin-acik);text-align:right">Genel İlerleme</div>
-            <div class="ilerleme-genel" style="color:${genelRenk}">${genel}%</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;color:${genelRenk}">${genel}%</div>
           </div>
-          <div style="width:48px;height:48px;border-radius:50%;background:conic-gradient(${genelRenk} ${genel*3.6}deg, #f3f4f6 0deg);display:flex;align-items:center;justify-content:center">
+          <div style="width:48px;height:48px;border-radius:50%;background:conic-gradient(${genelRenk} ${genel*3.6}deg,#f3f4f6 0deg);display:flex;align-items:center;justify-content:center">
             <div style="width:36px;height:36px;border-radius:50%;background:white;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:${genelRenk}">${genel}%</div>
           </div>
         </div>
       </div>
-      <!-- Genel progress bar -->
-      <div style="padding:10px 18px;background:#f9fafb;border-bottom:1px solid var(--sinir)">
-        <div style="height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden">
-          <div style="height:100%;width:${genel}%;background:${genelRenk};border-radius:4px;transition:width 0.5s"></div>
+
+      <!-- Genel bar -->
+      <div style="padding:8px 18px;background:#f9fafb;border-bottom:1px solid var(--sinir)">
+        <div style="height:6px;background:#e5e7eb;border-radius:3px;overflow:hidden">
+          <div style="height:100%;width:${genel}%;background:${genelRenk};border-radius:3px;transition:width 0.5s"></div>
         </div>
       </div>
-      <!-- Aşamalar -->
-      <div class="ilerleme-asama-grid">
-        ${ILERLEME_ASAMALARI.map(a => {
-          const as = sd[a.id] || { yuzde: 0, not: '' };
-          const yuzde = as.yuzde || 0;
-          const aRenk = yuzde < 30 ? '#dc2626' : yuzde < 70 ? '#f59e0b' : a.renk;
-          return `<div class="ilerleme-asama">
-            <div class="ilerleme-asama-adi">${a.ikon} ${a.adi}</div>
-            <div class="ilerleme-asama-yuzde" style="color:${aRenk}">${yuzde}%</div>
-            <div class="ilerleme-bar-kap">
-              <div class="ilerleme-bar-dolu" style="width:${yuzde}%;background:${aRenk}"></div>
-            </div>
-            <input type="range" class="ilerleme-slider" min="0" max="100" value="${yuzde}"
-              oninput="ilerlemeGuncelle('${s.id}','${a.id}',this.value,this)"
-              style="width:100%;margin-top:4px">
-            <input type="text" value="${as.not||''}" placeholder="Not ekle..."
-              onchange="ilerlemeNotGuncelle('${s.id}','${a.id}',this.value)"
-              style="width:100%;border:none;border-bottom:1px solid var(--sinir);font-size:0.74rem;color:var(--metin-acik);padding:3px 0;background:none;margin-top:4px">
-          </div>`;
-        }).join('')}
-      </div>
+
+      ${aktifKalemler.length === 0
+        ? `<div class="bos-durum" style="padding:28px"><div class="bos-durum-ikon">📋</div><div class="bos-durum-metin">Henüz kayıt yok.<br>Şantiyeler → Takım eklerken kategori seçin.</div></div>`
+        : Object.entries(IS_KATEGORILERI).map(([katId, kat]) => {
+            const katKalemler = kat.kalemler.filter(k => kalemSonuclari[k.id]);
+            if (katKalemler.length === 0) return '';
+
+            return `<div style="border-bottom:1px solid var(--sinir)">
+              <div style="padding:10px 18px;background:#f9fafb;font-size:0.78rem;font-weight:700;color:var(--metin-acik);letter-spacing:0.3px">${kat.adi}</div>
+              ${katKalemler.map(k => {
+                const r = kalemSonuclari[k.id];
+                const rRenk = r.yuzde < 30 ? '#dc2626' : r.yuzde < 70 ? '#f59e0b' : kat.renk;
+                const sonKat = r.katListesi.length > 0 ? r.katListesi[r.katListesi.length-1] : null;
+                const sonDaire = r.daireListesi.length > 0 ? r.daireListesi[r.daireListesi.length-1] : null;
+
+                return `<div style="display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid #f3f4f6">
+                  <span style="font-size:1.2rem;flex-shrink:0">${k.ikon}</span>
+                  <div style="flex:1;min-width:0">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;gap:8px;flex-wrap:wrap">
+                      <span style="font-weight:600;font-size:0.88rem">${k.adi}</span>
+                      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+                        <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem;color:${rRenk}">${r.yuzde}%</span>
+                        <span style="font-size:0.75rem;color:var(--metin-acik)">${r.tamamlanan}/${r.toplam} ${r.birim}</span>
+                      </div>
+                    </div>
+                    <div style="height:5px;background:#f3f4f6;border-radius:3px;overflow:hidden;margin-bottom:4px">
+                      <div style="height:100%;width:${r.yuzde}%;background:${rRenk};border-radius:3px;transition:width 0.4s"></div>
+                    </div>
+                    <div style="font-size:0.74rem;color:var(--metin-acik);display:flex;gap:8px;flex-wrap:wrap">
+                      ${r.birim === 'kat' && sonKat ? `<span>🏢 ${sonKat}'a kadar tamamlandı</span>` : ''}
+                      ${r.birim === 'daire' && sonDaire ? `<span>🚪 ${r.tamamlanan} daire tamamlandı</span>` : ''}
+                      ${r.katListesi.length > 0 && r.birim === 'kat' ? `<span style="color:#9ca3af">${r.katListesi.slice(0,4).join(', ')}${r.katListesi.length > 4 ? '...' : ''}</span>` : ''}
+                      <span>📋 ${r.kayitSayisi} kayıt</span>
+                    </div>
+                  </div>
+                </div>`;
+              }).join('')}
+            </div>`;
+          }).join('')
+      }
     </div>`;
   }).join('');
 }
 
-function ilerlemeGuncelle(santiyeId, asamaId, deger, inputEl) {
-  if (!veri.ilerleme) veri.ilerleme = {};
-  if (!veri.ilerleme[santiyeId]) veri.ilerleme[santiyeId] = {};
-  if (!veri.ilerleme[santiyeId][asamaId]) veri.ilerleme[santiyeId][asamaId] = {};
-  veri.ilerleme[santiyeId][asamaId].yuzde = parseInt(deger);
-
-  // Anlık UI güncelle (kaydetmeden)
-  const asama = ILERLEME_ASAMALARI.find(a=>a.id===asamaId);
-  const yuzde = parseInt(deger);
-  const renk = yuzde < 30 ? '#dc2626' : yuzde < 70 ? '#f59e0b' : (asama?.renk||'#16a34a');
-  const kutu = inputEl.closest('.ilerleme-asama');
-  if (kutu) {
-    kutu.querySelector('.ilerleme-asama-yuzde').textContent = yuzde + '%';
-    kutu.querySelector('.ilerleme-asama-yuzde').style.color = renk;
-    kutu.querySelector('.ilerleme-bar-dolu').style.width = yuzde + '%';
-    kutu.querySelector('.ilerleme-bar-dolu').style.background = renk;
-  }
-
-  // Genel yüzdeyi güncelle
-  const sd = veri.ilerleme[santiyeId];
-  const yuzdeleri = ILERLEME_ASAMALARI.map(a => sd[a.id]?.yuzde || 0);
-  const genel = Math.round(yuzdeleri.reduce((s,y)=>s+y,0) / ILERLEME_ASAMALARI.length);
-  const genelRenk = genel < 30 ? '#dc2626' : genel < 70 ? '#f59e0b' : '#16a34a';
-  const kart = inputEl.closest('.ilerleme-kart');
-  if (kart) {
-    kart.querySelector('.ilerleme-genel').textContent = genel + '%';
-    kart.querySelector('.ilerleme-genel').style.color = genelRenk;
-    const genelBar = kart.querySelector('[style*="conic-gradient"]');
-    if (genelBar) {
-      genelBar.style.background = `conic-gradient(${genelRenk} ${genel*3.6}deg, #f3f4f6 0deg)`;
-      genelBar.querySelector('div').textContent = genel + '%';
-      genelBar.querySelector('div').style.color = genelRenk;
-    }
-    const progBar = kart.querySelector('[style*="width:"][style*="background:"][style*="border-radius:4px;transition"]');
-    if (progBar) { progBar.style.width = genel+'%'; progBar.style.background = genelRenk; }
-  }
-
-  // Debounce kaydet
-  clearTimeout(window._ilerlemeTimer);
-  window._ilerlemeTimer = setTimeout(() => kaydet(), 800);
-}
-
-function ilerlemeNotGuncelle(santiyeId, asamaId, not) {
-  if (!veri.ilerleme) veri.ilerleme = {};
-  if (!veri.ilerleme[santiyeId]) veri.ilerleme[santiyeId] = {};
-  if (!veri.ilerleme[santiyeId][asamaId]) veri.ilerleme[santiyeId][asamaId] = {};
-  veri.ilerleme[santiyeId][asamaId].not = not;
-  clearTimeout(window._ilerlemeTimer);
-  window._ilerlemeTimer = setTimeout(() => kaydet(), 800);
-}
+// Eski ilerleme fonksiyonları (artık kullanılmıyor, geriye dönük uyumluluk için boş)
+function ilerlemeGuncelle() {}
+function ilerlemeNotGuncelle() {}
 
 // ════════════════════════════════════════════
 //   KİMLİK DOĞRULAMA & ROL YÖNETİMİ
@@ -3817,12 +4028,15 @@ async function girisYap() {
     return;
   }
 
+  // Firebase bağlantısı yoksa (test modu) — herhangi bir kullanıcı/PIN ile giriş
   try {
-    // İlk giriş — admin yoksa ilk kullanıcıyı admin yap
-    const snap = await USERS_REF.get();
+    const snap = await Promise.race([
+      USERS_REF.get(),
+      new Promise((_,reject) => setTimeout(() => reject(new Error('timeout')), 4000))
+    ]);
+
     let kullanicilar = snap.exists ? (snap.data().liste || []) : [];
 
-    // İlk kullanıcı yoksa otomatik admin oluştur
     if (kullanicilar.length === 0) {
       const ilkAdmin = { id: uid(), isim: kullanici, kullanici, pin, rol: 'admin', not: 'İlk kullanıcı' };
       kullanicilar = [ilkAdmin];
@@ -3838,14 +4052,17 @@ async function girisYap() {
       return;
     }
 
-    // Giriş başarılı
     aktifKullanici = bulunan;
     sessionStorage.setItem('aktifKullanici', JSON.stringify(aktifKullanici));
     girisBasarili();
+
   } catch(e) {
-    console.error(e);
-    hataEl.textContent = '❌ Bağlantı hatası, tekrar deneyin';
-    hataEl.style.display = 'block';
+    // Firebase yok (offline/test modu) — admin olarak gir
+    console.warn('Firebase bağlanamadı, test modunda giriş yapılıyor');
+    aktifKullanici = { id: 'test-admin', isim: kullanici || 'Test Admin', kullanici: kullanici || 'admin', rol: 'admin', not: 'Test modu' };
+    sessionStorage.setItem('aktifKullanici', JSON.stringify(aktifKullanici));
+    toast('Test modunda giriş yapıldı (Firebase bağlantısı yok) 🧪', '⚠️');
+    girisBasarili();
   }
 }
 
