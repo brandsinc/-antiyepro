@@ -1226,15 +1226,38 @@
     <!-- Bina bilgisi -->
     <div style="background:#f9fafb;border-radius:10px;padding:14px;margin-bottom:8px">
       <div style="font-size:0.78rem;font-weight:700;color:var(--metin-acik);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:10px">🏢 Bina Bilgisi (opsiyonel)</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
         <div class="form-group" style="margin:0">
-          <label>Kat Sayısı</label>
-          <input type="number" id="s-kat" min="1" placeholder="ör. 8">
+          <label>Normal Kat Sayısı</label>
+          <input type="number" id="s-kat" min="0" placeholder="ör. 8" oninput="sToplamGuncelle()">
         </div>
         <div class="form-group" style="margin:0">
           <label>Daire / Bölüm Sayısı</label>
           <input type="number" id="s-daire" min="1" placeholder="ör. 24">
         </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">
+        <div class="form-group" style="margin:0">
+          <label>Zemin Kat</label>
+          <select id="s-zemin" onchange="sToplamGuncelle()">
+            <option value="0">Yok</option>
+            <option value="1">Var (1 adet)</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label>Bodrum Kat Sayısı</label>
+          <input type="number" id="s-bodrum" min="0" max="5" placeholder="0" value="0" oninput="sToplamGuncelle()">
+        </div>
+        <div class="form-group" style="margin:0">
+          <label>Çatı Katı</label>
+          <select id="s-cati" onchange="sToplamGuncelle()">
+            <option value="0">Yok</option>
+            <option value="1">Var</option>
+          </select>
+        </div>
+      </div>
+      <div style="background:var(--ana-acik);border-radius:7px;padding:8px 10px;font-size:0.78rem;color:var(--ana)" id="s-toplam-kat-bilgi">
+        Toplam: 0 bölüm
       </div>
       <div class="form-group" style="margin-top:10px;margin-bottom:0">
         <label>Daire Numaralandırma</label>
@@ -1294,15 +1317,38 @@
     </div>
     <div style="background:#f9fafb;border-radius:10px;padding:14px;margin-bottom:8px">
       <div style="font-size:0.78rem;font-weight:700;color:var(--metin-acik);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:10px">🏢 Bina Bilgisi</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
         <div class="form-group" style="margin:0">
-          <label>Kat Sayısı</label>
-          <input type="number" id="sd-kat" min="1" placeholder="ör. 8">
+          <label>Normal Kat Sayısı</label>
+          <input type="number" id="sd-kat" min="0" placeholder="ör. 8" oninput="sdToplamGuncelle()">
         </div>
         <div class="form-group" style="margin:0">
           <label>Daire / Bölüm Sayısı</label>
           <input type="number" id="sd-daire" min="1" placeholder="ör. 24">
         </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">
+        <div class="form-group" style="margin:0">
+          <label>Zemin Kat</label>
+          <select id="sd-zemin" onchange="sdToplamGuncelle()">
+            <option value="0">Yok</option>
+            <option value="1">Var (1 adet)</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label>Bodrum Kat Sayısı</label>
+          <input type="number" id="sd-bodrum" min="0" max="5" placeholder="0" value="0" oninput="sdToplamGuncelle()">
+        </div>
+        <div class="form-group" style="margin:0">
+          <label>Çatı Katı</label>
+          <select id="sd-cati" onchange="sdToplamGuncelle()">
+            <option value="0">Yok</option>
+            <option value="1">Var</option>
+          </select>
+        </div>
+      </div>
+      <div style="background:var(--ana-acik);border-radius:7px;padding:8px 10px;font-size:0.78rem;color:var(--ana)" id="sd-toplam-kat-bilgi">
+        Toplam: 0 bölüm
       </div>
       <div class="form-group" style="margin-top:10px;margin-bottom:0">
         <label>Daire Numaralandırma</label>
@@ -1954,6 +2000,9 @@ function santiyeKaydet() {
     renk: document.getElementById('s-renk').value,
     aciklama: document.getElementById('s-aciklama').value.trim(),
     kat: parseInt(document.getElementById('s-kat').value) || 0,
+    zemin: parseInt(document.getElementById('s-zemin').value) || 0,
+    bodrum: parseInt(document.getElementById('s-bodrum').value) || 0,
+    cati: parseInt(document.getElementById('s-cati').value) || 0,
     daire: parseInt(document.getElementById('s-daire').value) || 0,
     daireTip: document.getElementById('s-daire-tip').value
   };
@@ -1961,7 +2010,7 @@ function santiyeKaydet() {
   veri.santiyeler.push(santiye);
   kaydet();
   modalKapat('modal-santiye');
-  ['s-adi','s-konum','s-baslangic','s-bitis','s-aciklama','s-kat','s-daire'].forEach(id => document.getElementById(id).value = '');
+  ['s-adi','s-konum','s-baslangic','s-bitis','s-aciklama','s-kat','s-bodrum','s-daire'].forEach(id => document.getElementById(id).value = '');
   santiyeleriGoster();
   toast('Şantiye eklendi!');
 }
@@ -2007,8 +2056,8 @@ function santiyeleriGoster() {
       <div class="santiye-kart-alti">
         <div class="santiye-kart-adi">${s.adi}</div>
         <div class="santiye-kart-konum">📍 ${s.konum || 'Konum belirtilmedi'}</div>
-        ${(s.kat||s.daire) ? `<div style="font-size:0.72rem;color:var(--metin-acik);margin-top:3px;display:flex;gap:8px">
-          ${s.kat ? `<span>🏢 ${s.kat} kat</span>` : ''}
+        ${(santiyeToplamKat(s)||s.daire) ? `<div style="font-size:0.72rem;color:var(--metin-acik);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap">
+          ${santiyeToplamKat(s) > 0 ? `<span>🏢 ${santiyeToplamKat(s)} kat${s.bodrum?` (${s.bodrum} bodrum dahil)`:''}${s.zemin?' + zemin':''}</span>` : ''}
           ${s.daire ? `<span>🚪 ${s.daire} daire</span>` : ''}
         </div>` : ''}
         ${s.baslangic ? `<div class="santiye-kart-tarih">📅 ${tarihFormatla(s.baslangic)}${s.bitis ? ' → ' + tarihFormatla(s.bitis) : ''}</div>` : ''}
@@ -2050,8 +2099,12 @@ function santiyeDuzenleAc(id) {
   document.getElementById('sd-renk').value = s.renk || '#2563eb';
   document.getElementById('sd-aciklama').value = s.aciklama || '';
   document.getElementById('sd-kat').value = s.kat || '';
+  document.getElementById('sd-zemin').value = s.zemin || 0;
+  document.getElementById('sd-bodrum').value = s.bodrum || 0;
+  document.getElementById('sd-cati').value = s.cati || 0;
   document.getElementById('sd-daire').value = s.daire || '';
   document.getElementById('sd-daire-tip').value = s.daireTip || 'numara';
+  sdToplamGuncelle();
   modalAc('modal-santiye-duzenle');
 }
 
@@ -2069,6 +2122,9 @@ function santiyeGuncelle() {
   s.renk = document.getElementById('sd-renk').value;
   s.aciklama = document.getElementById('sd-aciklama').value.trim();
   s.kat = parseInt(document.getElementById('sd-kat').value) || 0;
+  s.zemin = parseInt(document.getElementById('sd-zemin').value) || 0;
+  s.bodrum = parseInt(document.getElementById('sd-bodrum').value) || 0;
+  s.cati = parseInt(document.getElementById('sd-cati').value) || 0;
   s.daire = parseInt(document.getElementById('sd-daire').value) || 0;
   s.daireTip = document.getElementById('sd-daire-tip').value;
 
@@ -2090,6 +2146,59 @@ function santiyeSil(id) {
   toast('Şantiye silindi', '🗑️');
 }
 
+// Şantiyenin tüm kat listesini döndür (bodrum, zemin, normal, çatı dahil)
+function santiyeKatListesi(s) {
+  const katlar = [];
+  // Bodrum katlar (B2, B1...)
+  for (let b = (s.bodrum||0); b >= 1; b--) katlar.push(`B${b} - Bodrum`);
+  // Zemin
+  if (s.zemin) katlar.push('Zemin Kat');
+  // Normal katlar
+  for (let k = 1; k <= (s.kat||0); k++) katlar.push(`${k}. Kat`);
+  // Çatı
+  if (s.cati) katlar.push('Çatı Katı');
+  return katlar;
+}
+
+function santiyeToplamKat(s) {
+  return (s.kat||0) + (s.zemin||0) + (s.bodrum||0) + (s.cati||0);
+}
+
+// Canlı toplam güncelleme (modal açıkken)
+function sToplamGuncelle() {
+  const kat = parseInt(document.getElementById('s-kat').value)||0;
+  const zemin = parseInt(document.getElementById('s-zemin').value)||0;
+  const bodrum = parseInt(document.getElementById('s-bodrum').value)||0;
+  const cati = parseInt(document.getElementById('s-cati').value)||0;
+  const toplam = kat + zemin + bodrum + cati;
+  const el = document.getElementById('s-toplam-kat-bilgi');
+  if (el) {
+    const parcalar = [];
+    if (bodrum) parcalar.push(`${bodrum} bodrum`);
+    if (zemin) parcalar.push('zemin');
+    if (kat) parcalar.push(`${kat} normal kat`);
+    if (cati) parcalar.push('çatı');
+    el.textContent = `Toplam: ${toplam} bölüm${parcalar.length ? ' (' + parcalar.join(' + ') + ')' : ''}`;
+  }
+}
+
+function sdToplamGuncelle() {
+  const kat = parseInt(document.getElementById('sd-kat').value)||0;
+  const zemin = parseInt(document.getElementById('sd-zemin').value)||0;
+  const bodrum = parseInt(document.getElementById('sd-bodrum').value)||0;
+  const cati = parseInt(document.getElementById('sd-cati').value)||0;
+  const toplam = kat + zemin + bodrum + cati;
+  const el = document.getElementById('sd-toplam-kat-bilgi');
+  if (el) {
+    const parcalar = [];
+    if (bodrum) parcalar.push(`${bodrum} bodrum`);
+    if (zemin) parcalar.push('zemin');
+    if (kat) parcalar.push(`${kat} normal kat`);
+    if (cati) parcalar.push('çatı');
+    el.textContent = `Toplam: ${toplam} bölüm${parcalar.length ? ' (' + parcalar.join(' + ') + ')' : ''}`;
+  }
+}
+
 function personelBolumGoster() {
   const s = veri.santiyeler.find(s => s.id === seciliSantiyeId);
   if (!s) return;
@@ -2104,18 +2213,18 @@ function personelBolumGoster() {
   const katSel = document.getElementById('st-kat');
   const daireSel = document.getElementById('st-daire');
 
-  if (s.kat && s.kat > 0) {
+  // Kat dropdown — bodrum, zemin, normal, çatı dahil
+  const katListesi = santiyeKatListesi(s);
+  if (katListesi.length > 0) {
     katSel.innerHTML = '<option value="">— Kat seç —</option>';
-    // Zemin kat + üst katlar
-    katSel.innerHTML += '<option value="Zemin">Zemin Kat</option>';
-    for (let k = 1; k <= s.kat; k++) {
-      katSel.innerHTML += `<option value="${k}. Kat">${k}. Kat</option>`;
-    }
-    katSel.innerHTML += '<option value="Çatı">Çatı</option><option value="Bodrum">Bodrum</option><option value="Tümü">Tüm Katlar</option>';
+    katListesi.forEach(k => katSel.innerHTML += `<option value="${k}">${k}</option>`);
+    katSel.innerHTML += '<option value="Tümü">Tüm Katlar</option>';
   } else {
-    katSel.innerHTML = '<option value="">— Kat sayısı girilmedi —</option>';
-    for (let k = 1; k <= 20; k++) katSel.innerHTML += `<option value="${k}. Kat">${k}. Kat</option>`;
-    katSel.innerHTML += '<option value="Zemin">Zemin</option><option value="Bodrum">Bodrum</option><option value="Tümü">Tüm Katlar</option>';
+    // Şantiyede kat girilmemiş — manuel giriş için basit liste
+    katSel.innerHTML = '<option value="">— Kat seç —</option>';
+    ['B2 - Bodrum','B1 - Bodrum','Zemin Kat','1. Kat','2. Kat','3. Kat','4. Kat','5. Kat',
+     '6. Kat','7. Kat','8. Kat','9. Kat','10. Kat','Çatı Katı','Tümü'].forEach(k =>
+      katSel.innerHTML += `<option value="${k}">${k}</option>`);
   }
 
   if (s.daire && s.daire > 0) {
@@ -3830,7 +3939,7 @@ function ilerlemeHesapla(santiyeId) {
   const s = veri.santiyeler.find(s => s.id === santiyeId);
   if (!s) return {};
 
-  const toplamKat = s.kat || 1;
+  const toplamKat = santiyeToplamKat(s) || 1;
   const toplamDaire = s.daire || 1;
 
   // Her kalem için tamamlanan kat/daire listesi
