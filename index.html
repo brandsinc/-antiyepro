@@ -489,6 +489,25 @@
             <label>Usta / Başı</label>
             <input type="text" id="st-usta" placeholder="ör. Mehmet">
           </div>
+        </div>
+        <!-- Kat / Daire seçimi -->
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-top:10px" id="st-konum-satir">
+          <div class="form-group" style="margin:0;flex:1;min-width:100px">
+            <label>Kat</label>
+            <select id="st-kat" style="padding:8px 11px;border:1px solid var(--sinir);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:0.87rem;background:white;width:100%">
+              <option value="">— Kat seç —</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0;flex:1;min-width:100px">
+            <label>Daire / Bölüm</label>
+            <select id="st-daire" style="padding:8px 11px;border:1px solid var(--sinir);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:0.87rem;background:white;width:100%">
+              <option value="">— Daire seç —</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0;flex:2;min-width:150px">
+            <label>Yapılan İş</label>
+            <input type="text" id="st-is" placeholder="ör. Sıva, Döşeme, Alçı...">
+          </div>
           <button class="btn btn-sari" style="flex-shrink:0;height:42px" onclick="santiyeTakimEkle()">+ Ekle</button>
         </div>
       </div>
@@ -1198,6 +1217,28 @@
       <label>Açıklama</label>
       <textarea id="s-aciklama" rows="2" placeholder="Kısa açıklama..."></textarea>
     </div>
+    <!-- Bina bilgisi -->
+    <div style="background:#f9fafb;border-radius:10px;padding:14px;margin-bottom:8px">
+      <div style="font-size:0.78rem;font-weight:700;color:var(--metin-acik);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:10px">🏢 Bina Bilgisi (opsiyonel)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="form-group" style="margin:0">
+          <label>Kat Sayısı</label>
+          <input type="number" id="s-kat" min="1" placeholder="ör. 8">
+        </div>
+        <div class="form-group" style="margin:0">
+          <label>Daire / Bölüm Sayısı</label>
+          <input type="number" id="s-daire" min="1" placeholder="ör. 24">
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:10px;margin-bottom:0">
+        <label>Daire Numaralandırma</label>
+        <select id="s-daire-tip">
+          <option value="numara">Numaralı (1, 2, 3...)</option>
+          <option value="kat-daire">Kat-Daire (1A, 1B, 2A...)</option>
+          <option value="yok">Numara yok (sadece kat)</option>
+        </select>
+      </div>
+    </div>
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
       <button class="btn btn-kirmizi" onclick="modalKapat('modal-santiye')">İptal</button>
       <button class="btn btn-sari" onclick="santiyeKaydet()">✅ Kaydet</button>
@@ -1837,13 +1878,16 @@ function santiyeKaydet() {
     baslangic: document.getElementById('s-baslangic').value,
     bitis: document.getElementById('s-bitis').value,
     renk: document.getElementById('s-renk').value,
-    aciklama: document.getElementById('s-aciklama').value.trim()
+    aciklama: document.getElementById('s-aciklama').value.trim(),
+    kat: parseInt(document.getElementById('s-kat').value) || 0,
+    daire: parseInt(document.getElementById('s-daire').value) || 0,
+    daireTip: document.getElementById('s-daire-tip').value
   };
 
   veri.santiyeler.push(santiye);
   kaydet();
   modalKapat('modal-santiye');
-  ['s-adi','s-konum','s-baslangic','s-bitis','s-aciklama'].forEach(id => document.getElementById(id).value = '');
+  ['s-adi','s-konum','s-baslangic','s-bitis','s-aciklama','s-kat','s-daire'].forEach(id => document.getElementById(id).value = '');
   santiyeleriGoster();
   toast('Şantiye eklendi!');
 }
@@ -1888,6 +1932,10 @@ function santiyeleriGoster() {
       <div class="santiye-kart-alti">
         <div class="santiye-kart-adi">${s.adi}</div>
         <div class="santiye-kart-konum">📍 ${s.konum || 'Konum belirtilmedi'}</div>
+        ${(s.kat||s.daire) ? `<div style="font-size:0.72rem;color:var(--metin-acik);margin-top:3px;display:flex;gap:8px">
+          ${s.kat ? `<span>🏢 ${s.kat} kat</span>` : ''}
+          ${s.daire ? `<span>🚪 ${s.daire} daire</span>` : ''}
+        </div>` : ''}
         ${s.baslangic ? `<div class="santiye-kart-tarih">📅 ${tarihFormatla(s.baslangic)}${s.bitis ? ' → ' + tarihFormatla(s.bitis) : ''}</div>` : ''}
         <div class="santiye-stat">
           <div class="stat-item">
@@ -1933,9 +1981,50 @@ function personelBolumGoster() {
   document.getElementById('personel-bolum').style.display = 'block';
   document.getElementById('secili-santiye-adi').textContent = s.adi;
 
-  // Tarih alanını bugüne ayarla (ilk açılışta)
+  // Tarih alanını bugüne ayarla
   const tarihEl = document.getElementById('st-tarih');
   if (!tarihEl.value) tarihEl.value = bugunTarih();
+
+  // Kat/Daire dropdown'larını doldur
+  const katSel = document.getElementById('st-kat');
+  const daireSel = document.getElementById('st-daire');
+
+  if (s.kat && s.kat > 0) {
+    katSel.innerHTML = '<option value="">— Kat seç —</option>';
+    // Zemin kat + üst katlar
+    katSel.innerHTML += '<option value="Zemin">Zemin Kat</option>';
+    for (let k = 1; k <= s.kat; k++) {
+      katSel.innerHTML += `<option value="${k}. Kat">${k}. Kat</option>`;
+    }
+    katSel.innerHTML += '<option value="Çatı">Çatı</option><option value="Bodrum">Bodrum</option><option value="Tümü">Tüm Katlar</option>';
+  } else {
+    katSel.innerHTML = '<option value="">— Kat sayısı girilmedi —</option>';
+    for (let k = 1; k <= 20; k++) katSel.innerHTML += `<option value="${k}. Kat">${k}. Kat</option>`;
+    katSel.innerHTML += '<option value="Zemin">Zemin</option><option value="Bodrum">Bodrum</option><option value="Tümü">Tüm Katlar</option>';
+  }
+
+  if (s.daire && s.daire > 0) {
+    daireSel.innerHTML = '<option value="">— Daire seç —</option>';
+    const tip = s.daireTip || 'numara';
+    if (tip === 'numara') {
+      for (let d = 1; d <= s.daire; d++) daireSel.innerHTML += `<option value="Daire ${d}">Daire ${d}</option>`;
+    } else if (tip === 'kat-daire') {
+      const harfler = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const dairePerKat = Math.ceil(s.daire / (s.kat || 1));
+      for (let k = 1; k <= (s.kat||1); k++) {
+        for (let d = 0; d < dairePerKat; d++) {
+          daireSel.innerHTML += `<option value="${k}${harfler[d]}">${k}${harfler[d]}</option>`;
+        }
+      }
+    } else {
+      daireSel.innerHTML = '<option value="">Daire yok</option>';
+    }
+    daireSel.innerHTML += '<option value="Tümü">Tüm Daireler</option>';
+  } else {
+    daireSel.innerHTML = '<option value="">— Daire sayısı girilmedi —</option>';
+    for (let d = 1; d <= 30; d++) daireSel.innerHTML += `<option value="Daire ${d}">Daire ${d}</option>`;
+    daireSel.innerHTML += '<option value="Tümü">Tüm Daireler</option>';
+  }
 
   if (!veri.stGunluk) veri.stGunluk = {};
   const gunluk = veri.stGunluk[seciliSantiyeId] || {}; // { 'YYYY-MM-DD': [{id,adi,kisi,usta}] }
@@ -1969,7 +2058,7 @@ function personelBolumGoster() {
         <span class="badge badge-sari">👷 ${toplamKisi} kişi</span>
       </div>
       <table class="yoklama-tablo">
-        <thead><tr><th>Takım</th><th>Kişi</th><th>Usta / Başı</th><th></th></tr></thead>
+        <thead><tr><th>Takım</th><th>Kişi</th><th>Usta</th><th>Kat</th><th>Daire</th><th>Yapılan İş</th><th></th></tr></thead>
         <tbody>
         ${takimlar.map(t => `<tr>
           <td>
@@ -1986,6 +2075,12 @@ function personelBolumGoster() {
           <td>
             <input type="text" value="${t.usta||''}" placeholder="—" onchange="stGunlukGuncelle('${tarih}','${t.id}','usta',this.value)"
               style="border:none;background:none;font-size:0.88rem;color:var(--metin-acik);width:100%;padding:0;font-family:'DM Sans',sans-serif">
+          </td>
+          <td style="font-size:0.82rem;color:var(--metin-acik)">${t.kat||'—'}</td>
+          <td style="font-size:0.82rem;color:var(--metin-acik)">${t.daire||'—'}</td>
+          <td>
+            <input type="text" value="${t.is||''}" placeholder="—" onchange="stGunlukGuncelle('${tarih}','${t.id}','is',this.value)"
+              style="border:none;background:none;font-size:0.82rem;color:var(--metin-acik);width:100%;padding:0;font-family:'DM Sans',sans-serif;min-width:80px">
           </td>
           <td><button class="btn btn-kirmizi btn-sm" data-sil-fn="stGunlukSil" data-sil-args='["${tarih}","${t.id}"]'>🗑️</button></td>
         </tr>`).join('')}
@@ -2013,10 +2108,13 @@ function santiyeTakimEkle() {
     id: uid(),
     adi,
     kisi,
-    usta: document.getElementById('st-usta').value.trim()
+    usta: document.getElementById('st-usta').value.trim(),
+    kat: document.getElementById('st-kat').value,
+    daire: document.getElementById('st-daire').value,
+    is: document.getElementById('st-is').value.trim()
   });
   kaydet();
-  ['st-adi','st-usta'].forEach(id => document.getElementById(id).value = '');
+  ['st-adi','st-usta','st-is'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('st-kisi').value = '';
   personelBolumGoster();
   santiyeleriGoster();
@@ -3041,7 +3139,12 @@ function gunDetayGoster(tarih) {
         <div class="plan-isci-ikon" style="background:#dcfce7">${getIkon(t.adi)}</div>
         <div style="flex:1">
           <div style="font-weight:600;font-size:0.9rem">${t.adi}</div>
-          <div style="font-size:0.78rem;color:var(--metin-acik)">${t.usta ? '👤 ' + t.usta : '—'}</div>
+          <div style="font-size:0.78rem;color:var(--metin-acik);display:flex;gap:8px;flex-wrap:wrap">
+            ${t.usta ? `<span>👤 ${t.usta}</span>` : ''}
+            ${t.kat ? `<span>🏢 ${t.kat}</span>` : ''}
+            ${t.daire ? `<span>🚪 ${t.daire}</span>` : ''}
+            ${t.is ? `<span>🔧 ${t.is}</span>` : ''}
+          </div>
         </div>
         <span class="badge badge-sari">${t.kisi} kişi</span>
       </div>`).join('')}
